@@ -1,0 +1,36 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Voting - Statistik</title>
+    <link rel="stylesheet" href="{% static "front/css/style.css" %}">
+</head>
+<body>
+    <header>
+        <h1>E-Voting</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="voting.html">Voting</a></li>
+                <li><a href="statistik.html">Statistik</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="statistik" class="section">
+            <h2>Statistik</h2>
+            <p>Lihat hasil dan statistik voting secara real-time.</p>
+            <!-- Data statistik bisa ditambahkan di sini -->
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 E-Voting. All rights reserved.</p>
+    </footer>
+
+    <script src="{% static "front/js/script.js" %}"></script>
+</body>
+</html>

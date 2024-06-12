@@ -1,0 +1,153 @@
+{% extends "back/layouts/base.html" %}
+
+{% block title %}Daftar Kandidat{% endblock %} 
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header card-header-primary">
+                <h4 class="card-title">Daftar Kandidat</h4>
+                <p class="card-category">E-Voting Organisasi Inter Universitas Muhammadiyah Kalimantan Timur</p>
+            </div>
+            <div class="card-body">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
+                    Kandidat Baru
+                </button>
+
+                <!-- Create Modal -->
+                <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="createModalLabel">Buat Kandidat Baru</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="POST" action="{% url 'createKandidat' %}" enctype="multipart/form-data" id="createForm">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="createPemilihan" class="form-label">Pemilihan</label>
+                                        {{ form.pemilihan }}
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="createNama" class="form-label">Nama</label>
+                                        {{ form.nama }}
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="createVisiMisi" class="form-label">Visi dan Misi</label>
+                                        {{ form.visi_misi }}
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="createFoto" class="form-label">Foto</label>
+                                        {{ form.foto }}
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="submit" class="btn btn-primary">Save changes</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead class="text-primary">
+                            <th>No</th>
+                            <th>Nama Kandidat</th>
+                            <th>Visi dan Misi</th>
+                            <th>Foto</th>
+                            <th>Pemilihan</th>
+                            <th>Action</th>
+                        </thead>
+                        <tbody>
+                            {% for kandidat in kandidats %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ kandidat.nama }}</td>
+                                <td>{{ kandidat.visi_misi }}</td>
+                                <td><img src="{{ kandidat.foto.url }}" alt="{{ kandidat.nama }}" width="100"></td>
+                                <td>{{ kandidat.pemilihan.judul }}</td>
+                                <td>
+                                   <!-- Edit Modal -->
+<button type="button" class="btn btn-warning js-edit" data-bs-toggle="modal" data-bs-target="#editModal{{ kandidat.id }}">Edit</button>
+<div class="modal fade" id="editModal{{ kandidat.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ kandidat.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel{{ kandidat.id }}">Edit Kandidat</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'editKandidat' kandidat.id %}" enctype="multipart/form-data" id="editForm{{ kandidat.id }}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="editPemilihan{{ kandidat.id }}" class="form-label">Pemilihan</label>
+                        <select class="form-control" id="editPemilihan{{ kandidat.id }}" name="pemilihan">
+                            {% for pemilihan in pilihan_kandidat %}
+                                <option value="{{ pemilihan.id }}" {% if kandidat.pemilihan.id == pemilihan.id %} selected {% endif %}>{{ pemilihan.judul }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editNama{{ kandidat.id }}" class="form-label">Nama</label>
+                        <input type="text" class="form-control" id="editNama{{ kandidat.id }}" name="nama" value="{{ kandidat.nama }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editVisiMisi{{ kandidat.id }}" class="form-label">Visi dan Misi</label>
+                        <textarea class="form-control" id="editVisiMisi{{ kandidat.id }}" name="visi_misi">{{ kandidat.visi_misi }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editFoto{{ kandidat.id }}" class="form-label">Foto</label>
+                        <input type="file" class="form-control" id="editFoto{{ kandidat.id }}" name="foto">
+                        {% if kandidat.foto %}
+                            <img src="{{ kandidat.foto.url }}" alt="{{ kandidat.nama }}" width="100">
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+                                    <!-- End Edit Modal -->
+
+                                    <!-- Delete Modal -->
+                                    <button type="button" class="btn btn-danger js-delete" data-bs-toggle="modal" data-bs-target="#deleteModal{{ kandidat.id }}">Delete</button>
+                                    <div class="modal fade" id="deleteModal{{ kandidat.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ kandidat.id }}" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="deleteModalLabel{{ kandidat.id }}">Delete Kandidat</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to delete "{{ kandidat.nama }}"?</p>
+                                                    <form method="POST" action="{% url 'deleteKandidat' kandidat.id %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-danger">Yes, delete</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- End Delete Modal -->
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

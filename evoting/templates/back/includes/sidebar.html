@@ -1,0 +1,51 @@
+{% load static %}
+  <div class="sidebar" data-color="purple" data-background-color="white" data-image="{% static "back/img/sidebar-1.jpg" %} ">
+      <div class="logo">
+        <a target="_blank" rel="noopener noreferrer" 
+          href="https://appseed.us/admin-dashboards/django-dashboard-material" class="simple-text logo-normal">
+            E - Voting
+        </a>
+      </div>
+      <div class="sidebar-wrapper">
+        <ul class="nav">
+
+          <li class="nav-item ">
+            <a class="nav-link" href="{% url "dashboard" %}">
+              <i class="material-icons">dashboard</i>
+              <p>Dashboard</p>
+            </a>
+          </li>
+          <li class="nav-item ">
+            <a class="nav-link" href="{% url "pemilih" %}">
+              <i class="material-icons">person</i>
+              <p>Manajemen User</p>
+            </a>
+          </li>
+          <li class="nav-item ">
+            <a class="nav-link" href="{% url "pemilihan" %}">
+              <i class="material-icons">content_paste</i>
+              <p>Manajemen Pemilihan</p>
+            </a>
+          </li>
+          <li class="nav-it">
+            <a class="nav-link" href="{% url "kandidat" %}">
+              <i class="material-icons">library_books</i>
+              <p>Manajemen Kandidat</p>
+            </a>
+          </li>
+          <li class="n">
+            <a class="nav-link" href="/ui-icons.html">
+              <i class="material-icons">bubble_chart</i>
+              <p>Laporan Statistik</p>
+            </a>
+          </li>
+          <li class="nav-item ">
+            <a class="nav-link" href="#" >
+              <i class="material-icons">directions_run</i>
+              <p>Logout</p>
+            </a>
+          </li>     
+        </ul>
+      </div>
+
+    </div>
