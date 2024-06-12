@@ -226,7 +226,7 @@ Pre-loader Style
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #111;
+  background-color: #fffafa;
   display: -webkit-box;
   display: flex;
   -webkit-box-align: center;
@@ -764,8 +764,7 @@ Banner Style
   text-align: center;
   line-height: 58px;
   border: 1px solid #22b3c1;
-  border-radius: 50%;
-  float: left;
+  border-radius: 50%; 
   margin-right: 20px;
 }
 #section-1 .more-info h4 {
@@ -1324,7 +1323,7 @@ About Page Style
 
 .weekly-offers .item .thumb .text h6 {
   display: inline-block;
-  float: right;
+
   text-align: right;
   font-size: 20px;
   color: #22b3c1;

@@ -1,0 +1,31 @@
+{% extends "front/base.html" %}
+{% load static %}
+
+{% block content %}
+  <section id="section-1" class="mt-5">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="content-section">
+            <div class="section-heading text-center">
+              <h2>Daftar Pemilihan</h2>
+            </div>
+            <div class="row">
+              {% for pemilihan in pemilihans %}
+              <div class="col-lg-6 mb-4">
+                <div class="card">
+                  <div class="card-body">
+                    <h5 class="card-title">{{ pemilihan.judul }}</h5>
+                    <p class="card-text">Deskripsi: {{ pemilihan.deskripsi }}</p>
+                    <a href="{% url 'statistik' pemilihan.id %}" class="btn btn-primary">Lihat Statistik</a>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}

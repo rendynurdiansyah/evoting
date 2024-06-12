@@ -42,3 +42,8 @@ class KandidatForm(forms.ModelForm):
 
 class TokenForm(forms.Form):
     token = forms.UUIDField(label="Token")
+
+class VotingForm(forms.ModelForm):
+    class Meta:
+        model = Voting
+        fields = ['kandidat']
