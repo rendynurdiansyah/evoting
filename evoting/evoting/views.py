@@ -31,7 +31,7 @@ def logout_view(request):
 def home(request):
         # Cek login
     if not request.session.get('pemilih_id'):
-        return redirect('login')
+        return redirect('login_view')
 
     jumlah_pemilih = Pemilih.objects.count()
     jumlah_pemilihan = Pemilihan.objects.count()
@@ -121,7 +121,7 @@ def voting_success(request):
         # Cek login
     if not request.session.get('pemilih_id'):
         return redirect('login')
-    return render(request, 'back/home/voting_success.html', {'message': 'Thank you for voting!'})
+    return render(request, 'front/voting_success.html', {'message': 'Thank you for voting!'})
 
 def voting_already_used(request):
     return render(request, 'front/voting_gagal.html', {'message': 'Maaf, suara Anda sudah digunakan.'})
