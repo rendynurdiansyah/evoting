@@ -3,7 +3,6 @@
 {% block title %} UI Tables {% endblock %} 
 
 {% block content %}
-
 <div class="row">
     <div class="col-md-12">
         <div class="card">
@@ -48,6 +47,7 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="table-responsive">
                     <table class="table">
                         <thead class=" text-primary">
@@ -122,6 +122,10 @@
                                         </div>
                                     </div>
                                     <!-- End Delete Modal -->
+
+                                    <!-- Daftar Pemilih -->
+                                    <a href="{% url 'daftar_pemilih' pemilihan.id %}" class="btn btn-info">Daftar Pemilih</a>
+                                    <!-- End Daftar Pemilih -->
                                 </td>
                             </tr>
                             {% endfor %}

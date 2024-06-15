@@ -6,6 +6,7 @@ class Pemilihan(models.Model):
     waktu_mulai = models.DateTimeField(verbose_name="Waktu Mulai")
     waktu_selesai = models.DateTimeField(verbose_name="Waktu Selesai")
     token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    pemilih = models.ManyToManyField('Pemilih', related_name='pemilihan', blank=True)
 
     def __str__(self):
         return self.judul
@@ -31,7 +32,7 @@ class Kandidat(models.Model):
 
 class Voting(models.Model):
     pemilih = models.ForeignKey(Pemilih, on_delete=models.CASCADE)
-    kandidat = models.ForeignKey(Kandidat, on_delete=models.CASCADE)
+    kandidat = models.ForeignKey(Kandidat, on_delete=models.CASCADE,null=True, blank=True)
     pemilihan = models.ForeignKey(Pemilihan, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
 

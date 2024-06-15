@@ -14,6 +14,7 @@ urlpatterns = [
     path('pemilihan/create/', createPemilihan, name='createPemilihan'),
     path('pemilihan/edit/<int:pemilihan_id>/', editPemilihan, name='editPemilihan'),
     path('pemilihan/delete/<int:pemilihan_id>/', deletePemilihan, name='deletePemilihan'),
+    path('daftar_pemilih/<int:pemilihan_id>/', daftar_pemilih, name='daftar_pemilih'),
 
     path('kandidat/',kandidat , name='kandidat'),
     path('kandidat/create/', createKandidat, name='createKandidat'),

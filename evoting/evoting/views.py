@@ -9,7 +9,9 @@ from django.template import loader
 from django.template import TemplateDoesNotExist
 from dashboard.models import *
 from dashboard.forms import *
-
+import matplotlib.pyplot as plt
+from io import BytesIO
+import base64
 import logging
 
 # Konfigurasi logger
@@ -133,22 +135,35 @@ def daftar_pemilihan(request):
     }
     return render(request, 'front/daftar_pemilihan.html', context)
     
+
+
 def statistik(request, pemilihan_id):
-    pemilihan = get_object_or_404(Pemilihan, pk=pemilihan_id)
-    kandidats = Kandidat.objects.filter(pemilihan=pemilihan)
+    pemilihan = get_object_or_404(Pemilihan, id=pemilihan_id)
+    voting_results = Voting.objects.filter(pemilihan=pemilihan)
     
-    labels = []
-    data = []
+    # Prepare data for the chart
+    kandidats = pemilihan.kandidats.all()
+    labels = [kandidat.nama for kandidat in kandidats]
+    data = [voting_results.filter(kandidat=kandidat).count() for kandidat in kandidats]
 
-    for kandidat in kandidats:
-        labels.append(kandidat.nama)
-        jumlah_suara = Voting.objects.filter(pemilihan=pemilihan, kandidat=kandidat).count()
-        data.append(jumlah_suara)
-
-    context = {
+    # Create the bar chart
+    fig, ax = plt.subplots()
+    ax.bar(labels, data, color='blue')
+    ax.set_xlabel('Kandidat')
+    ax.set_ylabel('Jumlah Suara')
+    ax.set_title(f'Statistik Pemilihan: {pemilihan.judul}')
+    
+    # Save the figure to a BytesIO object
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    
+    # Encode the image to base64
+    image_base64 = base64.b64encode(buf.read()).decode('utf-8')
+    buf.close()
+    
+    return render(request, 'front/statistik.html', {
         'pemilihan': pemilihan,
-        'labels': labels,
-        'data': data,
-    }
-    return render(request, 'front/statistik.html', context)
+        'image_base64': image_base64
+    })
 

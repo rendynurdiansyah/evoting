@@ -1,0 +1,72 @@
+{% extends "back/layouts/base.html" %}
+
+{% block title %} Daftar Pemilih {% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header card-header-primary">
+                <h4 class="card-title ">Daftar Pemilih untuk {{ pemilihan.judul }}</h4>
+            </div>
+            <div class="card-body">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPemilihModal">
+                    Tambah Pemilih dari Daftar
+                </button>
+
+                <!-- Add Pemilih Modal -->
+                <div class="modal fade" id="addPemilihModal" tabindex="-1" aria-labelledby="addPemilihModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addPemilihModalLabel">Tambah Pemilih dari Daftar</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="POST" action="{% url 'daftar_pemilih' pemilihan.id %}">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="pemilihList" class="form-label">Pilih Pemilih</label>
+                                        <select id="pemilihList" name="pemilih" multiple class="form-control">
+                                            {% for pemilih in semua_pemilih %}
+                                                <option value="{{ pemilih.id }}">{{ pemilih.nama }} - {{ pemilih.nim }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="submit" class="btn btn-primary">Save changes</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead class="text-primary">
+                            <th>ID</th>
+                            <th>Nama</th>
+                            <th>NIM</th>
+                            <th>Prodi</th>
+                            <th>Status</th>
+                        </thead>
+                        <tbody>
+                            {% for pemilih in pemilih_terpilih %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ pemilih.nama }}</td>
+                                <td>{{ pemilih.nim }}</td>
+                                <td>{{ pemilih.prodi }}</td>
+                                <td></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,4 +1,4 @@
-
+{% extends "front/base.html" %}
 {% load static %}
 
 {% block content %}
@@ -7,44 +7,14 @@
       <div class="row justify-content-center">
         <div class="col-lg-10 content-section">
           <div class="section-heading text-center">
+            <br>
             <h2>Statistik Pemilihan: {{ pemilihan.judul }}</h2>
           </div>
-          <div class="chart-container">
-            <canvas id="myChart" width="400" height="200"></canvas>
+          <div class="chart-container text-center">
+            <img src="data:image/png;base64,{{ image_base64 }}" alt="Statistik Pemilihan">
           </div>
         </div>
       </div>
     </div>
   </section>
-{% endblock %}
-
-{% block extra_js %}
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      var ctx = document.getElementById('myChart').getContext('2d');
-      var myChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: {{ labels|safe }},
-          datasets: [{
-            label: 'Jumlah Suara',
-            data: {{ data|safe }},
-            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          }
-        }
-      });
-    });
-  </script>
 {% endblock %}

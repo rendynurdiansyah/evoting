@@ -50,6 +50,24 @@ def deletePemilih(request, pemilih_id):
         return redirect('pemilih')
     return render(request, 'back/home/pemilih.html', {'pemilih': pemilih})
 
+def daftar_pemilih(request, pemilihan_id):
+    pemilihan = get_object_or_404(Pemilihan, id=pemilihan_id)
+    semua_pemilih = Pemilih.objects.all()
+    pemilih_terpilih = Pemilih.objects.filter(voting__pemilihan=pemilihan).distinct()
+
+    if request.method == 'POST':
+        pemilih_ids = request.POST.getlist('pemilih')
+        for pemilih_id in pemilih_ids:
+            pemilih = get_object_or_404(Pemilih, id=pemilih_id)
+            Voting.objects.get_or_create(pemilih=pemilih, pemilihan=pemilihan)
+        return redirect('daftar_pemilih', pemilihan_id=pemilihan_id)
+
+    return render(request, 'back/home/daftar_pemilih.html', {
+        'pemilihan': pemilihan,
+        'semua_pemilih': semua_pemilih,
+        'pemilih_terpilih': pemilih_terpilih
+    })
+
 def pemilihan(request):
     pemilihans = Pemilihan.objects.all()
     form = PemilihanForm()
