@@ -1,0 +1,41 @@
+{% extends "back/layouts/base.html" %}
+
+{% block title %} Dashboard Admin E-Voting Inter Kampus {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<style>
+    .pemilihan-list {
+        list-style-type: none;
+        padding: 0;
+    }
+    .pemilihan-list li {
+        margin-bottom: 10px;
+    }
+    .btn-lihat-statistik {
+        margin-left: 10px;
+    }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Daftar Pemilihan</h2>
+            <ul class="pemilihan-list">
+                {% for pemilihan in pemilihans %}
+                <li>
+                    <strong>{{ pemilihan.judul }}</strong> - {{ pemilihan.deskripsi }}
+                    <a href="" class="btn btn-info btn-lihat-statistik">Lihat Statistik</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+{% endblock content %}
+
+{% block scripts %}
+<!-- Page Specific Custom Scripts -->
+{% endblock scripts %}

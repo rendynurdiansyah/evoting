@@ -55,12 +55,25 @@ def validate_token(request):
     return HttpResponse(status=405)
 
 def pemilihanvote(request, pemilihan_id):
+    # Cek login pemilih
+    pemilih_id = request.session.get('pemilih_id')
+    if not pemilih_id:
+        return redirect('pemilih_login')
+    
+    pemilihan = get_object_or_404(Pemilihan, id=pemilihan_id)
+    
+    # Periksa apakah pemilih terpilih dalam pemilihan tertentu
+    pemilih_terpilih = Pemilih.objects.filter(voting__pemilihan=pemilihan, id=pemilih_id).exists()
+    if not pemilih_terpilih:
+        return redirect('sorry')  # Ganti dengan halaman yang sesuai
+    
+    return render(request, 'front/pemilihanvote.html', {'pemilihan': pemilihan})
+    
+def sorry(request):
         # Cek login
     if not request.session.get('pemilih_id'):
-        return redirect('pemilih_login')
-    pemilihan = get_object_or_404(Pemilihan, id=pemilihan_id)
-    return render(request, 'front/pemilihanvote.html', {'pemilihan': pemilihan})
-
+        return redirect('login')
+    return render(request, 'front/voting_success.html', {'message': 'Maaf anda tidak termasuk dalam daftar!'})
 def pengambilanSuara(request, pemilihan_id):
         # Cek login
     if not request.session.get('pemilih_id'):

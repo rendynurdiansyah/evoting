@@ -30,4 +30,7 @@ urlpatterns = [
     path('kandidat/create/', createKandidat, name='createKandidat'),
     path('kandidat/edit/<int:kandidat_id>/', editKandidat, name='editKandidat'),
     path('kandidat/delete/<int:kandidat_id>/', deleteKandidat, name='deleteKandidat'),
+
+    path('laporan_statistik/',laporan_statistik , name='laporan_statistik'),
+
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

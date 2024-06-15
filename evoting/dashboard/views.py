@@ -206,3 +206,13 @@ def deleteKandidat(request, kandidat_id):
         kandidat.delete()
         return redirect('kandidat')
     return render(request, 'back/home/kandidat.html', {'kandidat': kandidat})
+
+def laporan_statistik(request):
+    pemilihans = Pemilihan.objects.all()
+    template_name = 'back/home/statistik.html'
+    context = {
+        'title':'my home',
+        'welcome':'welcome my home',
+        'pemilihans':pemilihans,
+    }
+    return render(request, template_name, context)
