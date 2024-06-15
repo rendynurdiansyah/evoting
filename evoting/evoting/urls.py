@@ -14,15 +14,13 @@ from django.conf.urls import handler404,handler500
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    path('login/', login_view, name='login_view'),
-    path('logout/', logout_view, name='logout_view'),
-
     path('', home, name='home'),
     path('voting/', voting, name='voting'),
     path('daftar/pemilihan/', daftar_pemilihan, name='daftar_pemilihan'),
     path('statistik/<int:pemilihan_id>/', statistik, name='statistik'),
 
     path("", include('dashboard.urls')),  
+    path("", include('accounts.urls')),  
 
     path('validate-token/', validate_token, name='validate_token'),
     path('pemilihanvote/<int:pemilihan_id>/', pemilihanvote, name='pemilihanvote'),

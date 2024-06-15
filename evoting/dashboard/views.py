@@ -1,8 +1,12 @@
 from django.shortcuts import render,redirect,get_object_or_404
+from django.contrib.auth.decorators import login_required
 from .forms import *
 from .models import *
+from django.utils import timezone
+
 
 # Create your views here.
+@login_required
 def dashboard(request):
     template_name = 'back/home/index.html'
     context = {
@@ -86,45 +90,79 @@ def hapus_pemilih(request, pemilihan_id, pemilih_id):
     
     return redirect('daftar_pemilih', pemilihan_id=pemilihan_id)
 
+
 def pemilihan(request):
     pemilihans = Pemilihan.objects.all()
     form = PemilihanForm()
-    template_name = 'back/home/pemilihan.html'
+
+    # Check if any election should be closed
+    for pemilihan in pemilihans:
+        if not pemilihan.is_election_closed:  # Only check if the election is not already closed
+            if pemilihan.waktu_selesai < timezone.now():
+                pemilihan.is_election_closed = True
+                pemilihan.save()
+
+            # Check if all voters have voted
+            if pemilihan.pemilih.count() > 0:
+                total_voters = pemilihan.pemilih.count()
+                total_votes = pemilihan.pemilih.exclude(suara=None).count()
+                if total_votes == total_voters:
+                    pemilihan.is_election_closed = True
+                    pemilihan.save()
+
     context = {
-        'title' : 'user',
+        'title': 'user',
         'pemilihans': pemilihans,
         'form': form,
     }
-    return render(request, template_name, context)
-
+    return render(request, 'back/home/pemilihan.html', context)
 def createPemilihan(request):
     if request.method == 'POST':
         form = PemilihanForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('pemilihan')  # Ganti dengan URL yang sesuai
+            return redirect('pemilihan')
     else:
-        form = VotingEventForm()
+        form = PemilihanForm()
     
     return render(request, 'back/home/pemilihan.html', {'form': form})
 
 def editPemilihan(request, pemilihan_id):
-    pemilihan = get_object_or_404(Pemilihan, id=id)
+    pemilihan = get_object_or_404(Pemilihan, id=pemilihan_id)
     if request.method == 'POST':
         form = PemilihanForm(request.POST, instance=pemilihan)
         if form.is_valid():
             form.save()
-            return redirect('pemilihan')  # Ganti dengan URL yang sesuai
+            return redirect('pemilihan')
     else:
         form = PemilihanForm(instance=pemilihan)
     return render(request, 'back/home/pemilihan.html', {'form': form, 'pemilihan': pemilihan})
 
 def deletePemilihan(request, pemilihan_id):
-    pemilihan = get_object_or_404(Pemilihan, id=id)
+    pemilihan = get_object_or_404(Pemilihan, id=pemilihan_id)
     if request.method == 'POST':
         pemilihan.delete()
-        return redirect('pemilihan')  # Ganti dengan URL yang sesuai
+        return redirect('pemilihan')
     return render(request, 'back/home/pemilihan.html', {'pemilihan': pemilihan})
+
+def closePemilihan(request, pemilihan_id):
+    pemilihan = get_object_or_404(Pemilihan, id=pemilihan_id)
+    
+    # Set is_closed to True to close the election
+    pemilihan.is_election_closed = True
+    pemilihan.save()
+
+    return redirect('pemilihan')  # Ganti dengan URL yang sesuai
+
+def reopenPemilihan(request, pemilihan_id):
+    pemilihan = get_object_or_404(Pemilihan, id=pemilihan_id)
+    
+    # Set is_closed to False to reopen the election
+    pemilihan.is_election_closed = False
+    pemilihan.save()
+
+    return redirect('pemilihan')
+
 
 def kandidat(request):
     kandidats = Kandidat.objects.all()

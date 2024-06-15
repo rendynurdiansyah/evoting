@@ -18,22 +18,11 @@ import logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def login_view(request):
-    if request.method == 'POST':
-        nim = request.POST.get('nim')
-        pemilih = get_object_or_404(Pemilih, nim=nim)
-        request.session['pemilih_id'] = pemilih.id
-        return redirect('voting')
-    return render(request, 'accounts/login.html')
-
-def logout_view(request):
-    logout(request)
-    return redirect('login_view')
 
 def home(request):
         # Cek login
     if not request.session.get('pemilih_id'):
-        return redirect('login_view')
+        return redirect('pemilih_login')
 
     jumlah_pemilih = Pemilih.objects.count()
     jumlah_pemilihan = Pemilihan.objects.count()
@@ -48,7 +37,7 @@ def home(request):
 def voting(request):
         # Cek login
     if not request.session.get('pemilih_id'):
-        return redirect('login')
+        return redirect('pemilih_login')
     return render(request, 'front/voting.html')
 
 def validate_token(request):
@@ -68,14 +57,14 @@ def validate_token(request):
 def pemilihanvote(request, pemilihan_id):
         # Cek login
     if not request.session.get('pemilih_id'):
-        return redirect('login')
+        return redirect('pemilih_login')
     pemilihan = get_object_or_404(Pemilihan, id=pemilihan_id)
     return render(request, 'front/pemilihanvote.html', {'pemilihan': pemilihan})
 
 def pengambilanSuara(request, pemilihan_id):
         # Cek login
     if not request.session.get('pemilih_id'):
-        return redirect('login')
+        return redirect('pemilih_login')
     pemilihan = get_object_or_404(Pemilihan, id=pemilihan_id)
     kandidats = Kandidat.objects.filter(pemilihan=pemilihan)
     return render(request, 'front/pengambilanSuara.html', {'pemilihan': pemilihan,'kandidats': kandidats})
@@ -87,7 +76,7 @@ def vote(request, pemilihan_id):
     pemilih_id = request.session.get('pemilih_id')
     if not pemilih_id:
         logger.debug('Pemilih ID tidak ditemukan dalam sesi')
-        return redirect('login')
+        return redirect('pemilih_login')
 
     pemilih = get_object_or_404(Pemilih, id=pemilih_id)
     
@@ -141,29 +130,23 @@ def statistik(request, pemilihan_id):
     pemilihan = get_object_or_404(Pemilihan, id=pemilihan_id)
     voting_results = Voting.objects.filter(pemilihan=pemilihan)
     
-    # Prepare data for the chart
+    # Hitung informasi yang diperlukan
+    jumlah_pemilih = Pemilih.objects.count()
+    pemilih_terpilih = voting_results.count()  # Jumlah pemilih yang telah memilih
+    jumlah_kandidat = pemilihan.kandidats.count()
+    
+    # Hitung total suara untuk setiap kandidat
     kandidats = pemilihan.kandidats.all()
     labels = [kandidat.nama for kandidat in kandidats]
     data = [voting_results.filter(kandidat=kandidat).count() for kandidat in kandidats]
-
-    # Create the bar chart
-    fig, ax = plt.subplots()
-    ax.bar(labels, data, color='blue')
-    ax.set_xlabel('Kandidat')
-    ax.set_ylabel('Jumlah Suara')
-    ax.set_title(f'Statistik Pemilihan: {pemilihan.judul}')
-    
-    # Save the figure to a BytesIO object
-    buf = BytesIO()
-    plt.savefig(buf, format='png')
-    buf.seek(0)
-    
-    # Encode the image to base64
-    image_base64 = base64.b64encode(buf.read()).decode('utf-8')
-    buf.close()
+    total_suara = sum(data)  # Total semua suara
     
     return render(request, 'front/statistik.html', {
         'pemilihan': pemilihan,
-        'image_base64': image_base64
+        'jumlah_pemilih': jumlah_pemilih,
+        'pemilih_terpilih': pemilih_terpilih,
+        'jumlah_kandidat': jumlah_kandidat,
+        'total_suara': total_suara,
+        'labels': labels,
+        'data': data,
     })
-

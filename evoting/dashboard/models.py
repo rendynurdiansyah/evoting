@@ -7,6 +7,7 @@ class Pemilihan(models.Model):
     waktu_selesai = models.DateTimeField(verbose_name="Waktu Selesai")
     token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     pemilih = models.ManyToManyField('Pemilih', related_name='pemilihan', blank=True)
+    is_election_closed = models.BooleanField(default=False, verbose_name="Pemilihan Ditutup")
 
     def __str__(self):
         return self.judul

@@ -2,19 +2,67 @@
 {% load static %}
 
 {% block content %}
-  <section id="section-1" class="mt-5">
-    <div class="container">
-      <div class="row justify-content-center">
-        <div class="col-lg-10 content-section">
-          <div class="section-heading text-center">
-            <br>
-            <h2>Statistik Pemilihan: {{ pemilihan.judul }}</h2>
-          </div>
-          <div class="chart-container text-center">
-            <img src="data:image/png;base64,{{ image_base64 }}" alt="Statistik Pemilihan">
-          </div>
+<section id="section-1" class="mt-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10 content-section">
+        <div class="section-heading text-center">
+          <br>
+          <h2>Statistik Pemilihan: {{ pemilihan.judul }}</h2>
+        </div>
+        <div class="chart-container text-center">
+          <canvas id="myChart"></canvas>
+        </div>
+        <div class="keterangan">
+          <p>Jumlah Pemilih: {{ jumlah_pemilih }}</p>
+          <p>Jumlah Pemilih yang Memilih: {{ pemilih_terpilih }}</p>
+          <p>Jumlah Kandidat: {{ jumlah_kandidat }}</p>
+          <p>Total Suara: {{ total_suara }}</p>
         </div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var myChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: {{ labels|safe }},
+        datasets: [{
+          label: 'Jumlah Suara',
+          data: {{ data|safe }},
+          backgroundColor: 'blue',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Jumlah Suara'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Kandidat'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    });
+  });
+</script>
+{% endblock extra_js %}
 {% endblock %}

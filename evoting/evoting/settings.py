@@ -41,6 +41,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'accounts.middleware.AdminSessionMiddleware',  # Middleware untuk admin
+    'accounts.middleware.PemilihSessionMiddleware',  # Middleware untuk pemilih
+
 ]
 
 ROOT_URLCONF = 'evoting.urls'
@@ -103,7 +109,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Makassar'
 
 USE_I18N = True
 
@@ -126,6 +132,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_URL ='/login'
+LOGIN_URL ='/login-admin'
 LOGIN_REDIRECT_URL ='/'
 LOGOUT_REDIRECT_URL ='/'

@@ -14,6 +14,8 @@ urlpatterns = [
     path('pemilihan/create/', createPemilihan, name='createPemilihan'),
     path('pemilihan/edit/<int:pemilihan_id>/', editPemilihan, name='editPemilihan'),
     path('pemilihan/delete/<int:pemilihan_id>/', deletePemilihan, name='deletePemilihan'),
+    path('close-pemilihan/<int:pemilihan_id>/', closePemilihan, name='closePemilihan'),
+    path('pemilihan/reopen/<int:pemilihan_id>/', reopenPemilihan, name='reopenPemilihan'),  
 
     # Rute untuk menambah pemilih
     path('tambah_pemilih/<int:pemilihan_id>/', tambah_pemilih, name='tambah_pemilih'),

@@ -1,5 +1,4 @@
 {% extends "back/layouts/base.html" %}
-
 {% block title %} UI Tables {% endblock %} 
 
 {% block content %}
@@ -7,7 +6,7 @@
     <div class="col-md-12">
         <div class="card">
             <div class="card-header card-header-primary">
-                <h4 class="card-title ">Daftar Pemilihan</h4>
+                <h4 class="card-title">Daftar Pemilihan</h4>
                 <p class="card-category">E-Voting Organisasi Inter Universitas Muhammadiyah Kalimantan Timur </p>
             </div>
             <div class="card-body">
@@ -50,7 +49,7 @@
 
                 <div class="table-responsive">
                     <table class="table">
-                        <thead class=" text-primary">
+                        <thead class="text-primary">
                             <th>ID</th>
                             <th>Judul</th>
                             <th>Waktu Mulai</th>
@@ -126,6 +125,21 @@
                                     <!-- Daftar Pemilih -->
                                     <a href="{% url 'daftar_pemilih' pemilihan.id %}" class="btn btn-info">Daftar Pemilih</a>
                                     <!-- End Daftar Pemilih -->
+
+                                    {% if pemilihan.is_election_closed %}
+                                        <!-- Tombol untuk membuka kembali pemilihan -->
+                                        <form action="{% url 'reopenPemilihan' pemilihan.id %}" method="POST" style="display: inline;">
+                                            {% csrf_token %}
+                                            
+                                            <button type="submit" class="btn btn-success">Open Election</button>
+                                        </form>
+                                    {% else %}
+                                        <!-- Tombol untuk menutup pemilihan -->
+                                        <form action="{% url 'closePemilihan' pemilihan.id %}" method="POST" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-secondary">Close Election</button>
+                                        </form>
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% endfor %}
@@ -138,5 +152,6 @@
 </div>
 
 {% endblock content %}
+
 {% block javascripts %}
 {% endblock javascripts %}
