@@ -1,0 +1,58 @@
+{% extends "back/layouts/base.html" %}
+
+{% block title %} Tambah Pemilih {% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header card-header-primary">
+                <h4 class="card-title">Tambah Pemilih untuk {{ pemilihan.judul }}</h4>
+            </div>
+            <div class="card-body">
+                <form id="tambahPemilihForm" method="POST" action="{% url 'tambah_pemilih' pemilihan.id %}">
+                    {% csrf_token %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead class="text-primary">
+                                <tr>
+                                    <th style="width: 10%;">Pilih</th>
+                                    <th>Nama</th>
+                                    <th>NIM</th>
+                                    <th>Prodi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pemilih in semua_pemilih %}
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <label class="form-check-label">
+                                            <input class="form-check-input" type="checkbox" id="pemilih{{ pemilih.id }}" name="pemilih_ids[]" value="{{ pemilih.id }}" style="background-color: black !important; border-color: black !important;">
+                                            <span class="form-check-sign">
+                                                <span class="check"></span>
+                                            </span>
+                                            </label>
+                                        </div>
+                                        
+                                    </td>
+                                    <td>{{ pemilih.nama }}</td>
+                                    <td>{{ pemilih.nim }}</td>
+                                    <td>{{ pemilih.prodi }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <a type="button" class="btn btn-secondary" data-bs-dismiss="modal" href="{% url "daftar_pemilih" pemilihan.id %}">Close</a>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
