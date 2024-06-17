@@ -216,3 +216,17 @@ def laporan_statistik(request):
         'pemilihans':pemilihans,
     }
     return render(request, template_name, context)
+
+def createPemilih(request):
+    if request.method == 'POST':
+        nama = request.POST.get('nama')
+        nim = request.POST.get('nim')
+        prodi = request.POST.get('prodi')
+        org_hima = request.POST.get('org_hima')
+        org_ukm = request.POST.get('org_ukm')
+        data = nama  # Data yang akan ditandatangani
+        signature = sign_data(data)
+        
+        Pemilih.objects.create(nama=nama, signature=signature, nim=nim, prodi=prodi, org_hima=org_hima, org_ukm=org_ukm)
+        return redirect('pemilih_list')
+    return render(request, 'dashboard/create_pemilih.html')
