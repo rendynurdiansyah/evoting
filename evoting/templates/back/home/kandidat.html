@@ -31,6 +31,10 @@
                                         {{ form.pemilihan }}
                                     </div>
                                     <div class="mb-3">
+                                        <label for="createNama" class="form-label">NO Urut</label>
+                                        {{ form.no_urut }}
+                                    </div>
+                                    <div class="mb-3">
                                         <label for="createNama" class="form-label">Nama</label>
                                         {{ form.nama }}
                                     </div>
@@ -56,6 +60,7 @@
                     <table class="table">
                         <thead class="text-primary">
                             <th>No</th>
+                            <th>No Urut</th>
                             <th>Nama Kandidat</th>
                             <th>Visi dan Misi</th>
                             <th>Foto</th>
@@ -72,49 +77,53 @@
                                 <td>{{ kandidat.pemilihan.judul }}</td>
                                 <td>
                                    <!-- Edit Modal -->
-<button type="button" class="btn btn-warning js-edit" data-bs-toggle="modal" data-bs-target="#editModal{{ kandidat.id }}">Edit</button>
-<div class="modal fade" id="editModal{{ kandidat.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ kandidat.id }}" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editModalLabel{{ kandidat.id }}">Edit Kandidat</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form method="POST" action="{% url 'editKandidat' kandidat.id %}" enctype="multipart/form-data" id="editForm{{ kandidat.id }}">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="editPemilihan{{ kandidat.id }}" class="form-label">Pemilihan</label>
-                        <select class="form-control" id="editPemilihan{{ kandidat.id }}" name="pemilihan">
-                            {% for pemilihan in pilihan_kandidat %}
-                                <option value="{{ pemilihan.id }}" {% if kandidat.pemilihan.id == pemilihan.id %} selected {% endif %}>{{ pemilihan.judul }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="editNama{{ kandidat.id }}" class="form-label">Nama</label>
-                        <input type="text" class="form-control" id="editNama{{ kandidat.id }}" name="nama" value="{{ kandidat.nama }}">
-                    </div>
-                    <div class="mb-3">
-                        <label for="editVisiMisi{{ kandidat.id }}" class="form-label">Visi dan Misi</label>
-                        <textarea class="form-control" id="editVisiMisi{{ kandidat.id }}" name="visi_misi">{{ kandidat.visi_misi }}</textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="editFoto{{ kandidat.id }}" class="form-label">Foto</label>
-                        <input type="file" class="form-control" id="editFoto{{ kandidat.id }}" name="foto">
-                        {% if kandidat.foto %}
-                            <img src="{{ kandidat.foto.url }}" alt="{{ kandidat.nama }}" width="100">
-                        {% endif %}
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Save changes</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+                                    <button type="button" class="btn btn-warning js-edit" data-bs-toggle="modal" data-bs-target="#editModal{{ kandidat.id }}">Edit</button>
+                                    <div class="modal fade" id="editModal{{ kandidat.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ kandidat.id }}" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="editModalLabel{{ kandidat.id }}">Edit Kandidat</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form method="POST" action="{% url 'editKandidat' kandidat.id %}" enctype="multipart/form-data" id="editForm{{ kandidat.id }}">
+                                                        {% csrf_token %}
+                                                        <div class="mb-3">
+                                                            <label for="editPemilihan{{ kandidat.id }}" class="form-label">Pemilihan</label>
+                                                            <select class="form-control" id="editPemilihan{{ kandidat.id }}" name="pemilihan">
+                                                                {% for pemilihan in pilihan_kandidat %}
+                                                                    <option value="{{ pemilihan.id }}" {% if kandidat.pemilihan.id == pemilihan.id %} selected {% endif %}>{{ pemilihan.judul }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label for="editNama{{ kandidat.id }}" class="form-label">Nama</label>
+                                                            <input type="text" class="form-control" id="editNama{{ kandidat.id }}" name="nama" value="{{ kandidat.nama }}">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label for="editNama{{ kandidat.id }}" class="form-label">No Urut</label>
+                                                            <input type="text" class="form-control" id="editNama{{ kandidat.id }}" name="no_urut" value="{{ kandidat.no_urut }}">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label for="editVisiMisi{{ kandidat.id }}" class="form-label">Visi dan Misi</label>
+                                                            <textarea class="form-control" id="editVisiMisi{{ kandidat.id }}" name="visi_misi">{{ kandidat.visi_misi }}</textarea>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label for="editFoto{{ kandidat.id }}" class="form-label">Foto</label>
+                                                            <input type="file" class="form-control" id="editFoto{{ kandidat.id }}" name="foto">
+                                                            {% if kandidat.foto %}
+                                                                <img src="{{ kandidat.foto.url }}" alt="{{ kandidat.nama }}" width="100">
+                                                            {% endif %}
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                            <button type="submit" class="btn btn-primary">Save changes</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
 
 
                                     <!-- End Edit Modal -->

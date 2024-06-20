@@ -3,7 +3,8 @@ from django.contrib.auth.decorators import login_required
 from .forms import *
 from .models import *
 from django.utils import timezone
-
+from django.http import JsonResponse
+from .utils import *
 
 # Create your views here.
 @login_required
@@ -30,7 +31,16 @@ def createPemilih(request):
     if request.method == 'POST':
         form = PemilihForm(request.POST)
         if form.is_valid():
-            form.save()
+            # Generate public and private keys
+            public_key, private_key = generate_keys()
+
+            # Save the form but do not commit to the database yet
+            pemilih = form.save(commit=False)
+            pemilih.public_key = public_key
+            pemilih.private_key = private_key
+
+            # Now save the pemilih object to the database
+            pemilih.save()
             return redirect('pemilih')
     else:
         form = PemilihForm()
@@ -42,10 +52,12 @@ def editPemilih(request, pemilih_id):
         form = PemilihForm(request.POST, instance=pemilih)
         if form.is_valid():
             form.save()
-            return redirect('pemilih')
+            return redirect('pemilih')  # Redirect ke halaman daftar pemilih setelah berhasil menyimpan
+        else:
+            return render(request, 'back/home/pemilih.html', {'edit_form': form, 'edit_errors': form.errors, 'edit_pemilih_id': pemilih_id})
     else:
         form = PemilihForm(instance=pemilih)
-    return render(request, 'back/home/pemilih.html', {'form': form})
+    return render(request, 'back/home/pemilih.html', {'edit_form': form, 'edit_pemilih_id': pemilih_id})
 
 def deletePemilih(request, pemilih_id):
     pemilih = get_object_or_404(Pemilih, pk=pemilih_id)
@@ -217,16 +229,12 @@ def laporan_statistik(request):
     }
     return render(request, template_name, context)
 
-def createPemilih(request):
-    if request.method == 'POST':
-        nama = request.POST.get('nama')
-        nim = request.POST.get('nim')
-        prodi = request.POST.get('prodi')
-        org_hima = request.POST.get('org_hima')
-        org_ukm = request.POST.get('org_ukm')
-        data = nama  # Data yang akan ditandatangani
-        signature = sign_data(data)
-        
-        Pemilih.objects.create(nama=nama, signature=signature, nim=nim, prodi=prodi, org_hima=org_hima, org_ukm=org_ukm)
-        return redirect('pemilih_list')
-    return render(request, 'dashboard/create_pemilih.html')
+# def hasil_statistik(request):
+#     pemilihans = Pemilihan.objects.all()
+#     template_name = 'back/home/laporan_statistik.html'
+#     context = {
+#         'title':'my home',
+#         'welcome':'welcome my home',
+#         'pemilihans':pemilihans,
+#     }
+#     return render(request, template_name, context)

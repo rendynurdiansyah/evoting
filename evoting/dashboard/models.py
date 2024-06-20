@@ -13,17 +13,20 @@ class Pemilihan(models.Model):
         return self.judul
 
 class Pemilih(models.Model):
-    nama = models.CharField(max_length=100)
-    nim = models.CharField(max_length=20)
-    prodi = models.CharField(max_length=100)
-    org_hima = models.CharField(max_length=100)
-    org_ukm = models.CharField(max_length=100)
+    nama = models.TextField( blank=True, null=True)
+    nim = models.TextField( blank=True, null=True)
+    prodi = models.TextField(blank=True, null=True)
+    org_hima = models.TextField(blank=True, null=True)
+    org_ukm = models.TextField(blank=True, null=True)
+    public_key = models.TextField(blank=True, null=True)  # Bidang untuk menyimpan kunci publik
+    private_key = models.TextField(blank=True, null=True)  # Bidang untuk menyimpan kunci privat
 
-    def __str__(self):
+    def _str_(self):
         return self.nama
 
 class Kandidat(models.Model):
     pemilihan = models.ForeignKey(Pemilihan, on_delete=models.CASCADE, related_name="kandidats" ,default=1)
+    no_urut = models.IntegerField(blank=True, null=True)
     nama = models.CharField(max_length=100)
     visi_misi = models.TextField()
     foto = models.ImageField(upload_to='foto/', blank=True, null=True)

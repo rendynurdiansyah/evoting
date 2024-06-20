@@ -1,5 +1,6 @@
 from django import forms
 from .models import *
+from django.core.exceptions import ValidationError
 
 class PemilihanForm(forms.ModelForm):
     class Meta:
@@ -27,15 +28,21 @@ class PemilihForm(forms.ModelForm):
             'org_hima': forms.TextInput(attrs={'class': 'form-control','placeholder': 'Masukkan Organinasi Himpunan'}),
             'org_ukm': forms.TextInput(attrs={'class': 'form-control','placeholder': 'Masukkan Organisasi UKM'}),
         }
-
+    def clean_nim(self):
+        nim = self.cleaned_data.get('nim')
+        if Pemilih.objects.filter(nim=nim).exists():
+            raise forms.ValidationError("This NIM already exists. Please use a different NIM.")
+        return nim
+        
 class KandidatForm(forms.ModelForm):
     class Meta:
         model = Kandidat
-        fields = ['nama', 'visi_misi', 'foto', 'pemilihan']
+        fields = ['nama','no_urut', 'visi_misi', 'foto', 'pemilihan']
         
         widgets = {
             'pemilihan': forms.Select(attrs={'class': 'form-control'}),
             'nama': forms.TextInput(attrs={'class': 'form-control'}),
+            'no_urut': forms.TextInput(attrs={'class': 'form-control'}),
             'visi_misi': forms.Textarea(attrs={'class': 'form-control'}),
             'foto': forms.ClearableFileInput(attrs={'class': 'form-control'}),
         }

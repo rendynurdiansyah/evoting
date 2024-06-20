@@ -3,36 +3,43 @@
 <html lang="en">
 
   <head>
-
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-
     <title>E-Voting UMKT</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="{% static "front/vendor/bootstrap/css/bootstrap.min.css" %} " rel="stylesheet">
+    <link href="{% static 'front/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
 
     <!-- Additional CSS Files -->
-    <link rel="stylesheet" href="{% static "front/css/fontawesome.css" %} ">
-    <link rel="stylesheet" href="{% static "front/css/templatemo-woox-travel.css" %} ">
-    <link rel="stylesheet" href="{% static "front/css/owl.css" %} ">
-    <link rel="stylesheet" href="{% static "front/css/animate.css" %} ">
-    <link rel="stylesheet"href="https://unpkg.com/swiper@7/swiper-bundle.min.css"/>
+    <link rel="stylesheet" href="{% static 'front/css/fontawesome.css' %}">
+    <link rel="stylesheet" href="{% static 'front/css/templatemo-woox-travel.css' %}">
+    <link rel="stylesheet" href="{% static 'front/css/owl.css' %}">
+    <link rel="stylesheet" href="{% static 'front/css/animate.css' %}">
+    <link rel="stylesheet" href="https://unpkg.com/swiper@7/swiper-bundle.min.css"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-<!--
 
-TemplateMo 580 Woox Travel
-
-https://templatemo.com/tm-580-woox-travel
-
--->
-
+    <!-- Custom CSS -->
+    <style>
+      .logo1 {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        font-size: 24px;
+        color: #007bff;
+        text-decoration: none;
+        position: relative;
+        left: 30px;
+        top : 18px;
+      }
+      .logo1 span {
+        font-weight: 400;
+        color: #333;
+      }
+    </style>
+    {% block css %}{% endblock css %}
   </head>
 
 <body>
-
   <!-- ***** Preloader Start ***** -->
   <div id="js-preloader" class="js-preloader">
     <div class="preloader-inner">
@@ -53,15 +60,15 @@ https://templatemo.com/tm-580-woox-travel
             <div class="col-12">
                 <nav class="main-nav">
                     <!-- ***** Logo Start ***** -->
-                    <a href="index.html" class="logo">
-                        <img src="{% static "front/images/logo.png" %} " alt="">
+                    <a href="{% url 'home' %}" class="logo1">
+                        E-Voting<span> UMKT</span>
                     </a>
                     <!-- ***** Logo End ***** -->
                     <!-- ***** Menu Start ***** -->
                     <ul class="nav">
-                        <li><a href="{% url "home" %}" class="active">Home</a></li>
-                        <li><a href="{% url "voting" %}">Voting</a></li>
-                        <li><a href="{% url "daftar_pemilihan" %}">Statistik</a></li>
+                        <li><a href="{% url 'home' %}" class="active">Home</a></li>
+                        <li><a href="{% url 'voting' %}">Voting</a></li>
+                        <li><a href="{% url 'daftar_pemilihan' %}">Statistik</a></li>
                     </ul>   
                     <a class='menu-trigger'>
                         <span>Menu</span>
@@ -73,18 +80,18 @@ https://templatemo.com/tm-580-woox-travel
     </div>
   </header>
   <!-- ***** Header Area End ***** -->
-{% block content %}{% endblock content %}
-{% block extra_js %}{% endblock extra_js %}
+  {% block content %}{% endblock content %}
+  {% block extra_js %}{% endblock extra_js %}
   <!-- Scripts -->
   <!-- Bootstrap core JavaScript -->
-  <script src="{% static "front/vendor/jquery/jquery.min.js" %} "></script>
-  <script src="{% static "front/vendor/bootstrap/js/bootstrap.min.js" %} "></script>
-
-  <script src="{% static "front/js/isotope.min.js" %} "></script>
-  <script src="{% static "front/js/owl-carousel.js" %} "></script>
-  <script src="{% static "front/js/tabs.js" %} "></script>
-  <script src="{% static "front/js/popup.js" %} "></script>
-  <script src="{% static "front/js/custom.js" %} "></script>
+  <script src="{% static 'front/vendor/jquery/jquery.min.js' %}"></script>
+  <script src="{% static 'front/vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+  <script src="{% static 'front/js/isotope.min.js' %}"></script>
+  <script src="{% static 'front/js/owl-carousel.js' %}"></script>
+  <script src="{% static 'front/js/tabs.js' %}"></script>
+  <script src="{% static 'front/js/popup.js' %}"></script>
+  <script src="{% static 'front/js/custom.js' %}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 
   <script>
@@ -101,7 +108,6 @@ https://templatemo.com/tm-580-woox-travel
       bannerTimer = setInterval(bannerSwitcher, 5000)
     });
   </script>
-
-  </body>
+</body>
 
 </html>
