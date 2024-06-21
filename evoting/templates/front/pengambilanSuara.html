@@ -40,13 +40,13 @@
                       </div>
                       <div class="modal-body">
                         <h5>Apakah Anda yakin dengan pilihan Anda?</h5>
-                        <form method="POST" action="{% url 'vote' pemilihan.id %}">
+                        <form id="voteForm{{ kandidat.id }}">
                           {% csrf_token %}
                           <input type="hidden" name="kandidat_id" value="{{ kandidat.id }}">
                       </div>
                       <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kembali</button>
-                        <button type="submit" class="btn btn-primary">Yakin</button>
+                        <button type="button" class="btn btn-primary js-vote-confirm" data-kandidat-id="{{ kandidat.id }}" data-pemilihan-id="{{ pemilihan.id }}">Yakin</button>
                       </div>
                       </form>
                     </div>
@@ -67,4 +67,51 @@
 {% block extra_js %}
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        // Does this cookie string begin with the name we want?
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  $(document).ready(function() {
+    $('.js-vote-confirm').click(function() {
+      var kandidatId = $(this).data('kandidat-id');
+      var pemilihanId = $(this).data('pemilihan-id');
+      var csrfToken = getCookie('csrftoken');
+
+      $.ajax({
+        url: '{% url "vote" pemilihan.id %}',
+        type: 'POST',
+        data: {
+          'kandidat_id': kandidatId,
+          'csrfmiddlewaretoken': csrfToken
+        },
+        success: function(response) {
+          if (response.status === 'success') {
+            alert('Voting berhasil!');
+            window.location.href = '{% url "voting_success" %}';
+          } else {
+            alert(response.message || 'Error submitting vote');
+            window.location.href = '{% url "voting_already_used" %}';
+          }
+        },
+        error: function(xhr, status, error) {
+          alert('Error submitting vote');
+        }
+      });
+    });
+  });
+</script>
 {% endblock %}

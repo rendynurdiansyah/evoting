@@ -42,3 +42,10 @@ class Voting(models.Model):
 
     class Meta:
         unique_together = ('pemilih', 'pemilihan')
+
+class DaftarPemilihTerpilih(models.Model):
+    pemilihan = models.ForeignKey(Pemilihan, on_delete=models.CASCADE)
+    pemilih = models.ForeignKey(Pemilih, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.pemilihan} - {self.pemilih}"

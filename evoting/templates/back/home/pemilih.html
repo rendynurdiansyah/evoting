@@ -48,18 +48,18 @@
                                         {% endif %}
                                     </div>
                                     <div class="mb-3">
-                                      <label for="createOrgHima" class="form-label">Organisasi HIMA</label>
-                                      <select class="form-control" id="createOrgHima" name="org_hima" required>
-                                          <option value="HIMA A" {% if create_form.org_hima.value == "HIMA A" %}selected{% endif %}>HIMA A</option>
-                                          <option value="HIMA B" {% if create_form.org_hima.value == "HIMA B" %}selected{% endif %}>HIMA B</option>
-                                          <option value="HIMA C" {% if create_form.org_hima.value == "HIMA C" %}selected{% endif %}>HIMA C</option>
-                                          <!-- Tambahkan pilihan HIMA sesuai kebutuhan -->
-                                      </select>
-                                      {% if create_form.org_hima.errors %}
-                                          <div class="text-danger">{{ create_form.org_hima.errors|striptags }}</div>
-                                      {% endif %}
-                                  </div>
-                                  <div class="mb-3">
+                                    <label for="createOrgHima" class="form-label">Organisasi HIMA</label>
+                                    <select class="form-control" id="createOrgHima" name="org_hima" required>
+                                        <option value="HIMA A" {% if create_form.org_hima.value == "HIMA A" %}selected{% endif %}>HIMA A</option>
+                                        <option value="HIMA B" {% if create_form.org_hima.value == "HIMA B" %}selected{% endif %}>HIMA B</option>
+                                        <option value="HIMA C" {% if create_form.org_hima.value == "HIMA C" %}selected{% endif %}>HIMA C</option>
+                                        <!-- Tambahkan pilihan HIMA sesuai kebutuhan -->
+                                    </select>
+                                    {% if create_form.org_hima.errors %}
+                                        <div class="text-danger">{{ create_form.org_hima.errors|striptags }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="mb-3">
                                     <label for="createOrgUkm" class="form-label">Organisasi UKM</label>
                                     <input type="text" class="form-control" id="createOrgUkm" name="org_ukm" value="{{ create_form.org_ukm.value }}" required>
                                     {% if create_form.org_ukm.errors %}
@@ -96,13 +96,13 @@
                                 <td>{{ pemilih.prodi }}</td>
                                 <td>{{ pemilih.org_hima }}</td>
                                 <td>
-                                  {% with pemilih.org_ukm|safe as org_ukm_json %}
-                                      <script>
-                                          var orgUkm = JSON.parse('{{ org_ukm_json|escapejs }}');
+                                {% with pemilih.org_ukm|safe as org_ukm_json %}
+                                    <script>
+                                        var orgUkm = JSON.parse('{{ org_ukm_json|escapejs }}');
                                           for (var i = 0; i < orgUkm.length; i++) {
                                               document.write(orgUkm[i].value);
                                               if (i < orgUkm.length - 1) {
-                                                  document.write(', ');
+                                                document.write(', ');
                                               }
                                           }
                                       </script>

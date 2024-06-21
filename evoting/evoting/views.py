@@ -2,7 +2,8 @@
 from django.contrib import admin
 from django.urls import path, reverse
 from django.shortcuts import render, redirect,get_object_or_404 
-
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django import template
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
@@ -62,8 +63,8 @@ def pemilihanvote(request, pemilihan_id):
     
     pemilihan = get_object_or_404(Pemilihan, id=pemilihan_id)
     
-    # Periksa apakah pemilih terpilih dalam pemilihan tertentu
-    pemilih_terpilih = Pemilih.objects.filter(voting__pemilihan=pemilihan, id=pemilih_id).exists()
+    # Periksa apakah pemilih terpilih dalam pemilihan tertentu berdasarkan DaftarPemilihTerpilih
+    pemilih_terpilih = DaftarPemilihTerpilih.objects.filter(pemilihan=pemilihan, pemilih__id=pemilih_id).exists()
     if not pemilih_terpilih:
         return redirect('sorry')  # Ganti dengan halaman yang sesuai
     
@@ -82,44 +83,39 @@ def pengambilanSuara(request, pemilihan_id):
     kandidats = Kandidat.objects.filter(pemilihan=pemilihan)
     return render(request, 'front/pengambilanSuara.html', {'pemilihan': pemilihan,'kandidats': kandidats})
 
+@csrf_exempt
 def vote(request, pemilihan_id):
     pemilihan = get_object_or_404(Pemilihan, pk=pemilihan_id)
     kandidats = Kandidat.objects.filter(pemilihan=pemilihan)
-    
+
     pemilih_id = request.session.get('pemilih_id')
     if not pemilih_id:
         logger.debug('Pemilih ID tidak ditemukan dalam sesi')
-        return redirect('pemilih_login')
+        return JsonResponse({'status': 'error', 'message': 'Pemilih ID tidak ditemukan dalam sesi'}, status=400)
 
     pemilih = get_object_or_404(Pemilih, id=pemilih_id)
-    
+
     # Periksa apakah pemilih sudah memberikan suara untuk pemilihan ini
     if Voting.objects.filter(pemilih=pemilih, pemilihan=pemilihan).exists():
-        return redirect('voting_already_used')
+        return JsonResponse({'status': 'error', 'message': 'Anda sudah memberikan suara untuk pemilihan ini'}, status=400)
 
     if request.method == 'POST':
         kandidat_id = request.POST.get('kandidat_id')
         if not kandidat_id:
             logger.debug('Kandidat ID tidak ditemukan dalam POST data')
-            return redirect('pengambilanSuara', pemilihan_id=pemilihan_id)
-        
+            return JsonResponse({'status': 'error', 'message': 'Kandidat ID tidak ditemukan dalam POST data'}, status=400)
+
         kandidat = get_object_or_404(Kandidat, id=kandidat_id)
-        
+
         voting = Voting(pemilih=pemilih, kandidat=kandidat, pemilihan=pemilihan)
         try:
             voting.save()
-            return redirect('voting_success')
+            return JsonResponse({'status': 'success', 'message': 'Voting berhasil'})
         except Exception as e:
             logger.error(f"Error saving vote: {e}")
-            return HttpResponse("Error saving vote", status=500)
-    
-    template_name = 'front/pengambilanSuara.html'
-    context = {
-        'title': 'Voting',
-        'pemilihan': pemilihan,
-        'kandidats': kandidats,
-    }
-    return render(request, template_name, context)
+            return JsonResponse({'status': 'error', 'message': 'Error saving vote'}, status=500)
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
 
 def voting_success(request):
         # Cek login

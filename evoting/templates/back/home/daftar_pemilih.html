@@ -24,18 +24,22 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for pemilih in pemilih_terpilih %}
+                            {% for daftar_pemilih in pemilihan.daftarpemilihterpilih_set.all %}
                             <tr>
                                 <td>{{ forloop.counter }}</td>
-                                <td>{{ pemilih.nama }}</td>
-                                <td>{{ pemilih.nim }}</td>
-                                <td>{{ pemilih.prodi }}</td>
+                                <td>{{ daftar_pemilih.pemilih.nama }}</td>
+                                <td>{{ daftar_pemilih.pemilih.nim }}</td>
+                                <td>{{ daftar_pemilih.pemilih.prodi }}</td>
                                 <td>
-                                    <form method="POST" action="{% url 'hapus_pemilih' pemilihan.id pemilih.id %}">
+                                    <form method="POST" action="{% url 'hapus_pemilih' pemilihan.id daftar_pemilih.pemilih.id %}">
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
                                     </form>                                    
                                 </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">Belum ada pemilih terdaftar untuk pemilihan ini.</td>
                             </tr>
                             {% endfor %}
                         </tbody>

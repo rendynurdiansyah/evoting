@@ -70,6 +70,11 @@ def daftar_pemilih(request, pemilihan_id):
     pemilihan = get_object_or_404(Pemilihan, id=pemilihan_id)
     pemilih_terpilih = Pemilih.objects.filter(voting__pemilihan=pemilihan).distinct()
 
+    # Simpan data pemilih_terpilih ke DaftarPemilihTerpilih
+    for pemilih in pemilih_terpilih:
+        if not DaftarPemilihTerpilih.objects.filter(pemilihan=pemilihan, pemilih=pemilih).exists():
+            DaftarPemilihTerpilih.objects.create(pemilihan=pemilihan, pemilih=pemilih)
+
     return render(request, 'back/home/daftar_pemilih.html', {
         'pemilihan': pemilihan,
         'pemilih_terpilih': pemilih_terpilih
@@ -83,7 +88,9 @@ def tambah_pemilih(request, pemilihan_id):
         pemilih_ids = request.POST.getlist('pemilih_ids[]')
         for pemilih_id in pemilih_ids:
             pemilih = get_object_or_404(Pemilih, id=pemilih_id)
-            Voting.objects.get_or_create(pemilih=pemilih, pemilihan=pemilihan)
+            # Tambahkan pemilih ke DaftarPemilihTerpilih jika belum ada
+            if not DaftarPemilihTerpilih.objects.filter(pemilihan=pemilihan, pemilih=pemilih).exists():
+                DaftarPemilihTerpilih.objects.create(pemilihan=pemilihan, pemilih=pemilih)
         return redirect('daftar_pemilih', pemilihan_id=pemilihan_id)
 
     return render(request, 'back/home/tambah_pemilih.html', {
@@ -96,8 +103,8 @@ def hapus_pemilih(request, pemilihan_id, pemilih_id):
     pemilih = get_object_or_404(Pemilih, id=pemilih_id)
     
     if request.method == 'POST':
-        voting = Voting.objects.filter(pemilih=pemilih, pemilihan=pemilihan)
-        voting.delete()
+        # Hapus pemilih dari DaftarPemilihTerpilih
+        DaftarPemilihTerpilih.objects.filter(pemilihan=pemilihan, pemilih=pemilih).delete()
         return redirect('daftar_pemilih', pemilihan_id=pemilihan_id)
     
     return redirect('daftar_pemilih', pemilihan_id=pemilihan_id)
