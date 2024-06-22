@@ -35,13 +35,13 @@ class Kandidat(models.Model):
         return self.nama
 
 class Voting(models.Model):
-    pemilih = models.ForeignKey(Pemilih, on_delete=models.CASCADE)
-    kandidat = models.ForeignKey(Kandidat, on_delete=models.CASCADE,null=True, blank=True)
-    pemilihan = models.ForeignKey(Pemilihan, on_delete=models.CASCADE)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    nama_pemilih = models.CharField(max_length=200,blank=True, null=True)
+    nama_kandidat = models.CharField(max_length=100,blank=True, null=True)
+    judul_pemilihan = models.CharField(max_length=200,blank=True, null=True)
+    waktu_voting = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        unique_together = ('pemilih', 'pemilihan')
+    def __str__(self):
+        return f"{self.nama_pemilih} - {self.nama_kandidat} ({self.judul_pemilihan})"
 
 class DaftarPemilihTerpilih(models.Model):
     pemilihan = models.ForeignKey(Pemilihan, on_delete=models.CASCADE)

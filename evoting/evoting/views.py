@@ -11,9 +11,15 @@ from django.template import TemplateDoesNotExist
 from dashboard.models import *
 from dashboard.forms import *
 import matplotlib.pyplot as plt
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP
+from dashboard.utils import *
 from io import BytesIO
+from datetime import datetime
 import base64
 import logging
+
+
 
 # Konfigurasi logger
 logger = logging.getLogger(__name__)
@@ -88,33 +94,49 @@ def vote(request, pemilihan_id):
     pemilihan = get_object_or_404(Pemilihan, pk=pemilihan_id)
     kandidats = Kandidat.objects.filter(pemilihan=pemilihan)
 
+    # Dapatkan ID pemilih dari sesi
     pemilih_id = request.session.get('pemilih_id')
     if not pemilih_id:
-        logger.debug('Pemilih ID tidak ditemukan dalam sesi')
         return JsonResponse({'status': 'error', 'message': 'Pemilih ID tidak ditemukan dalam sesi'}, status=400)
 
     pemilih = get_object_or_404(Pemilih, id=pemilih_id)
-
+    
     # Periksa apakah pemilih sudah memberikan suara untuk pemilihan ini
-    if Voting.objects.filter(pemilih=pemilih, pemilihan=pemilihan).exists():
+    public_key = load_public_key(pemilih)
+    decrypt_pemilih_nama = decrypt_with_public_key(public_key,pemilih.nama)
+    decrypt_judul_pemilihan = decrypt_with_public_key(public_key,pemilihan.judul)
+    if Voting.objects.filter(nama_pemilih=decrypt_pemilih_nama, judul_pemilihan=decrypt_judul_pemilihan).exists():
         return JsonResponse({'status': 'error', 'message': 'Anda sudah memberikan suara untuk pemilihan ini'}, status=400)
 
     if request.method == 'POST':
-        kandidat_id = request.POST.get('kandidat_id')
-        if not kandidat_id:
-            logger.debug('Kandidat ID tidak ditemukan dalam POST data')
-            return JsonResponse({'status': 'error', 'message': 'Kandidat ID tidak ditemukan dalam POST data'}, status=400)
+        form = VotingForm(request.POST)
+        if form.is_valid():
+            kandidat_id = form.cleaned_data['kandidat_id']
+            kandidat = get_object_or_404(Kandidat, id=kandidat_id, pemilihan=pemilihan)
 
-        kandidat = get_object_or_404(Kandidat, id=kandidat_id)
+            # Enkripsi data voting menggunakan kunci privat pemilih
+            private_key = load_private_key(pemilih)
+            encrypted_nama_pemilih = encrypt_with_private_key(private_key, pemilih.nama)
+            encrypted_nama_kandidat = encrypt_with_private_key(private_key, kandidat.nama)
+            encrypted_judul_pemilihan = encrypt_with_private_key(private_key, pemilihan.judul)
+            waktu_voting = datetime.now()
 
-        voting = Voting(pemilih=pemilih, kandidat=kandidat, pemilihan=pemilihan)
-        try:
-            voting.save()
-            return JsonResponse({'status': 'success', 'message': 'Voting berhasil'})
-        except Exception as e:
-            logger.error(f"Error saving vote: {e}")
-            return JsonResponse({'status': 'error', 'message': 'Error saving vote'}, status=500)
+            # Simpan informasi voting
+            voting = Voting(
+                nama_pemilih=pemilih.nama,
+                nama_kandidat=encrypted_nama_kandidat,
+                judul_pemilihan=pemilihan.judul,
+                waktu_voting=waktu_voting
+            )
+            try:
+                voting.save()
+                return JsonResponse({'status': 'success', 'message': 'Voting berhasil'})
+            except Exception as e:
+                return JsonResponse({'status': 'error', 'message': 'Error saving vote'}, status=500)
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Form is not valid'}, status=400)
 
+    # Jika method bukan POST, kembalikan error
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
 
 def voting_success(request):

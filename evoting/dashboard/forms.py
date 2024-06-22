@@ -1,6 +1,7 @@
 from django import forms
 from .models import *
 from django.core.exceptions import ValidationError
+from .utils import *
 
 class PemilihanForm(forms.ModelForm):
     class Meta:
@@ -51,6 +52,8 @@ class TokenForm(forms.Form):
     token = forms.UUIDField(label="Token")
 
 class VotingForm(forms.ModelForm):
+    kandidat_id = forms.IntegerField(widget=forms.HiddenInput())
+
     class Meta:
         model = Voting
-        fields = ['kandidat']
+        fields = ['kandidat_id']

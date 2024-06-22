@@ -47,6 +47,7 @@ def pemilih_login(request):
         nim = request.POST.get('nim')
         pemilih = get_object_or_404(Pemilih, nim=nim)
         request.session['pemilih_id'] = pemilih.id
+        request.session['pemilih_nama'] = pemilih.nama
         return redirect('voting')
     return render(request, 'accounts/login.html')
 
