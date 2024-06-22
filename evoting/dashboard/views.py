@@ -4,7 +4,8 @@ from .forms import *
 from .models import *
 from django.utils import timezone
 from django.http import JsonResponse
-from .utils import *
+from .utilsRSA import *
+from .utilsDSA import *
 
 # Create your views here.
 @login_required
@@ -31,8 +32,13 @@ def createPemilih(request):
     if request.method == 'POST':
         form = PemilihForm(request.POST)
         if form.is_valid():
-            # Generate public and private keys
+            # Generate RSA key
             public_key, private_key = generate_keys()
+            # Generate DSA keys
+            dsa_public_key, dsa_private_key = generate_dsa_keys()
+            
+            # Save DSA keys to env
+            save_dsa_keys_to_env(form.cleaned_data['nama'], dsa_public_key, dsa_private_key)
 
             # Save the form but do not commit to the database yet
             pemilih = form.save(commit=False)
@@ -41,7 +47,8 @@ def createPemilih(request):
 
             # Now save the pemilih object to the database
             pemilih.save()
-            return redirect('pemilih')
+
+            return redirect('pemilih')  # Ganti 'pemilih' dengan nama URL yang sesuai
     else:
         form = PemilihForm()
     return render(request, 'back/home/pemilih.html', {'form': form})
@@ -68,9 +75,11 @@ def deletePemilih(request, pemilih_id):
 
 def daftar_pemilih(request, pemilihan_id):
     pemilihan = get_object_or_404(Pemilihan, id=pemilihan_id)
-    pemilih_terpilih = Pemilih.objects.filter(voting__pemilihan=pemilihan).distinct()
+    
+    # Retrieve distinct Pemilih objects associated with the given Pemilihan
+    pemilih_terpilih = Pemilih.objects.filter(pemilihan__id=pemilihan_id).distinct()
 
-    # Simpan data pemilih_terpilih ke DaftarPemilihTerpilih
+    # Simpan data pemilih_terpilih ke DaftarPemilihTerpilih if it doesn't exist already
     for pemilih in pemilih_terpilih:
         if not DaftarPemilihTerpilih.objects.filter(pemilihan=pemilihan, pemilih=pemilih).exists():
             DaftarPemilihTerpilih.objects.create(pemilihan=pemilihan, pemilih=pemilih)

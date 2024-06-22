@@ -1,7 +1,7 @@
 from django import forms
 from .models import *
 from django.core.exceptions import ValidationError
-from .utils import *
+
 
 class PemilihanForm(forms.ModelForm):
     class Meta:

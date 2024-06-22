@@ -13,7 +13,8 @@ from dashboard.forms import *
 import matplotlib.pyplot as plt
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
-from dashboard.utils import *
+from dashboard.utilsRSA import *
+from dashboard.utilsDSA import *
 from io import BytesIO
 from datetime import datetime
 import base64
