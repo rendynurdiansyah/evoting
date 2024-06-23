@@ -34,19 +34,15 @@ def createPemilih(request):
         if form.is_valid():
             # Generate RSA key
             public_key, private_key = generate_keys()
-            # Generate DSA keys
-            dsa_public_key, dsa_private_key = generate_dsa_keys()
-            
-            # Save DSA keys to env
-            save_dsa_keys_to_env(form.cleaned_data['nama'], dsa_public_key, dsa_private_key)
-
             # Save the form but do not commit to the database yet
             pemilih = form.save(commit=False)
             pemilih.public_key = public_key
             pemilih.private_key = private_key
-
             # Now save the pemilih object to the database
             pemilih.save()
+
+            # Generate DSA key
+            generate_dsa_keys(pemilih.id)
 
             return redirect('pemilih')  # Ganti 'pemilih' dengan nama URL yang sesuai
     else:
@@ -252,5 +248,38 @@ def laporan_statistik(request):
 #         'title':'my home',
 #         'welcome':'welcome my home',
 #         'pemilihans':pemilihans,
+#     }
+#     return render(request, template_name, context)
+# def hasil_voting(request, pemilihan_id):
+#     pemilihan = get_object_or_404(Pemilihan, id=pemilihan_id)
+#     votings = Voting.objects.filter(judul_pemilihan=pemilihan.judul)
+    
+#     pemilih_id = request.session.get('pemilih_id')
+#     if not pemilih_id:
+#         return render(request, 'front/error.html', {'message': 'Pemilih ID tidak ditemukan dalam sesi'}, status=400)
+    
+#     pemilih = get_object_or_404(Pemilih, id=pemilih_id)
+#     public_key = load_public_key(pemilih)
+    
+#     decrypted_votes = []
+#     for vote in votings:
+#         try:
+#             # decrypted_nama_kandidat = decrypt_with_public_key(public_key, vote.nama_kandidat)
+#             decrypted_votes.append({
+#                 'nama_pemilih': vote.nama_pemilih,  # Nama pemilih tidak dienkripsi
+#                 'nama_kandidat': vote.nama_kandidat,
+#                 'judul_pemilihan': vote.judul_pemilihan,  # Judul pemilihan tidak dienkripsi
+#                 'waktu_voting': vote.waktu_voting,
+#             })
+#         except Exception as e:
+#             print(f"Error decrypting vote: {e}")
+#             continue
+    
+#     form = VotingForm()
+#     template_name = 'back/home/hasil_voting.html'
+#     context = {
+#         'title': pemilihan.judul,
+#         'decrypted_votes': decrypted_votes,
+#         'form': form,
 #     }
 #     return render(request, template_name, context)

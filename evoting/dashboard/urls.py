@@ -6,6 +6,7 @@ from django.conf.urls.static import static, settings
 urlpatterns = [
     path('dashboard/', dashboard, name='dashboard'),
     path('pemilih/',pemilih , name='pemilih'),
+
     path('pemilih/create/', createPemilih, name='createPemilih'),
     path('pemilih/edit/<int:pemilih_id>/', editPemilih, name='editPemilih'),
     path('pemilih/delete/<int:pemilih_id>/', deletePemilih, name='deletePemilih'),

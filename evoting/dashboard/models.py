@@ -1,7 +1,12 @@
 from django.db import models
 import secrets
 from .utilsRSA import *
-
+from .utilsDSA import *
+from cryptography.hazmat.primitives.asymmetric import dsa
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric.utils import Prehashed
+from cryptography.hazmat.primitives import serialization
+import base64, os
 
 class Pemilihan(models.Model):
     judul = models.CharField(max_length=200, verbose_name="Judul")
@@ -30,6 +35,15 @@ class Pemilih(models.Model):
 
     def _str_(self):
         return self.nama
+    
+    def generate_keys_dsa(self):
+        generate_dsa_keys(self.id)
+
+    def get_private_key(self):
+        return load_dsa_private_key(self.id)
+
+    def get_public_key(self):
+        return load_dsa_public_key(self.id)
 
 class Kandidat(models.Model):
     pemilihan = models.ForeignKey(Pemilihan, on_delete=models.CASCADE, related_name="kandidats" ,default=1)
@@ -42,14 +56,39 @@ class Kandidat(models.Model):
         return self.nama
 
 class Voting(models.Model):
-    nama_pemilih = models.CharField(max_length=200, blank=True, null=True)
-    nama_kandidat = models.CharField(max_length=100, blank=True, null=True)
-    nama_kandidat_dekripsi = models.CharField(max_length=100, blank=True, null=True)  # Field untuk hasil dekripsi
-    judul_pemilihan = models.CharField(max_length=200, blank=True, null=True)
+    nama_pemilih = models.TextField( blank=True, null=True)
+    nama_kandidat = models.TextField( blank=True, null=True) # Field untuk hasil dekripsi
+    judul_pemilihan = models.TextField( blank=True, null=True)
     waktu_voting = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.nama_pemilih} - {self.nama_kandidat} ({self.judul_pemilihan})"
+    
+    def sign_vote(self):
+        message = f'{self.pemilih.id}{self.kandidat.id}{self.pemilihan.id}{self.timestamp}'.encode('utf-8')
+        private_key = self.pemilih.get_private_key()
+        signature = private_key.sign(
+            message,
+            hashes.SHA1()
+        )
+        self.signature = base64.b64encode(signature).decode('utf-8')
+        self.save()
+
+    def verify_signature(self):
+        message = f'{self.pemilih.id}{self.kandidat.id}{self.pemilihan.id}{self.timestamp}'.encode('utf-8')
+        public_key = self.pemilih.get_public_key()
+        signature = base64.b64decode(self.signature.encode('utf-8'))
+
+        try:
+            public_key.verify(
+                signature,
+                message,
+                hashes.SHA1()
+            )
+            return True
+        except Exception as e:
+            return False
+
 
 class DaftarPemilihTerpilih(models.Model):
     pemilihan = models.ForeignKey(Pemilihan, on_delete=models.CASCADE)

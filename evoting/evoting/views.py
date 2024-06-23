@@ -89,93 +89,144 @@ def pengambilanSuara(request, pemilihan_id):
 
 @csrf_exempt
 def vote(request, pemilihan_id):
+    # Get the election object based on pemilihan_id
     pemilihan = get_object_or_404(Pemilihan, pk=pemilihan_id)
+    
+    # Get candidates for the election
     kandidats = Kandidat.objects.filter(pemilihan=pemilihan)
 
-    # Dapatkan ID pemilih dari sesi
+    # Get voter ID from session
     pemilih_id = request.session.get('pemilih_id')
     if not pemilih_id:
+        # Log the error and return an error response
+        logger.error('Pemilih ID tidak ditemukan dalam sesi')
         return JsonResponse({'status': 'error', 'message': 'Pemilih ID tidak ditemukan dalam sesi'}, status=400)
 
+    # Get voter object based on pemilih_id
     pemilih = get_object_or_404(Pemilih, id=pemilih_id)
-
-    # Periksa apakah pemilih sudah memberikan suara untuk pemilihan ini
-    votings = Voting.objects.filter(judul_pemilihan=pemilihan.judul, nama_pemilih=pemilih.nama)
     
-    if votings.exists():
+    # Check if the voter has already voted for this election
+    votings = Voting.objects.filter(judul_pemilihan=pemilihan.judul)
+    # private_key = load_private_key(pemilih)
+    # Check if the voter has already voted for this election
+    voting = Voting.objects.filter(judul_pemilihan=pemilihan.judul, nama_pemilih=pemilih.nama).first()
+    
+    if voting:
+        # Log the error and return an error response
+        logger.error('Pemilih telah memberikan suara untuk pemilihan ini')
         return JsonResponse({'status': 'error', 'message': 'Anda sudah memberikan suara untuk pemilihan ini'}, status=400)
 
+    # Iterate through each voting object to check if the pemilih has voted
+    # pemilih_telah_memberikan_suara = False
+    # for voting in votings:
+    #     decrypted_nama_pemilih = decrypt_with_private_key(private_key, voting.nama_pemilih)
+    #     decrypted_judul_pemilihan = decrypt_with_private_key(private_key, voting.judul_pemilihan)
+
+    #     if decrypted_nama_pemilih == pemilih.nama and decrypted_judul_pemilihan == pemilihan.judul:
+    #         pemilih_telah_memberikan_suara = True
+    #         break
+
+    # if pemilih_telah_memberikan_suara:
+    #     # Log the error and return an error response
+    #     logger.error('Pemilih telah memberikan suara untuk pemilihan ini')
+    #     return JsonResponse({'status': 'error', 'message': 'Anda sudah memberikan suara untuk pemilihan ini'}, status=400)
+
+    # If the request method is POST, process the voting form
     if request.method == 'POST':
         form = VotingForm(request.POST)
         if form.is_valid():
             kandidat_id = form.cleaned_data['kandidat_id']
             kandidat = get_object_or_404(Kandidat, id=kandidat_id, pemilihan=pemilihan)
-
-            # Enkripsi data voting menggunakan kunci publik pemilih
-            private_key = load_private_key(pemilih)
-            encrypted_nama_pemilih = encrypt_with_private_key(private_key, pemilih.nama)
-            encrypted_nama_kandidat = encrypt_with_private_key(private_key, kandidat.nama)
-            encrypted_judul_pemilihan = encrypt_with_private_key(private_key, pemilihan.judul)
+            
+            # Encrypt voting data using voter's public key
+            public_key = load_public_key(pemilih)
+            encrypted_nama_pemilih = pemilih.nama
+            encrypted_nama_kandidat = encrypt_with_public_key(public_key, kandidat.nama)
+            encrypted_judul_pemilihan = pemilihan.judul
             waktu_voting = datetime.now()
 
-            # Simpan informasi voting
+            # Save voting information
             voting = Voting(
-                nama_pemilih=pemilih.nama,
+                nama_pemilih=encrypted_nama_pemilih,
                 nama_kandidat=encrypted_nama_kandidat,
-                judul_pemilihan=pemilihan.judul,
+                judul_pemilihan=encrypted_judul_pemilihan,
                 waktu_voting=waktu_voting
             )
             try:
                 voting.save()
                 
-                # Tandai bahwa pemilih sudah memberikan suara
-                request.session['has_voted'] = True
+                # Mark that the voter has voted
+                pemilih.has_voted = True
+                pemilih.save()
                 
-                return JsonResponse({'status': 'success', 'message': 'Voting berhasil'})
+                # Sign the voting message using voter's private key
+                private_key = pemilih.get_private_key()
+                message = f"{pemilih.nama}-{kandidat.nama}-{pemilihan.judul}-{str(waktu_voting)}"
+                signature = private_key.sign(
+                    message.encode('utf-8'), hashes.SHA256()
+                )
+                signature_b64 = base64.b64encode(signature).decode('utf-8')
+
+                # Add signature to response header
+                response = JsonResponse({'status': 'success', 'message': 'Voting berhasil'})
+                response['X-Vote-Signature'] = signature_b64
+                logger.info('Tanda tangan DSA berhasil ditambahkan ke header')
+
+                return response
             except Exception as e:
+                logger.error(f'Error saat menyimpan vote: {str(e)}')
                 return JsonResponse({'status': 'error', 'message': 'Error saving vote'}, status=500)
         else:
+            # Log the error and return an error response if form is not valid
+            logger.error('Form is not valid')
             return JsonResponse({'status': 'error', 'message': 'Form is not valid'}, status=400)
 
-    # Jika method bukan POST, kembalikan error
+    # If method is not POST, return an error response
+    logger.error('Invalid request method')
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
 
 def hasil_pemilihan(request, pemilihan_id):
     pemilihan = get_object_or_404(Pemilihan, id=pemilihan_id)
+    votings = Voting.objects.filter(judul_pemilihan=pemilihan.judul)
     
     pemilih_id = request.session.get('pemilih_id')
     if not pemilih_id:
+        logger.error('Pemilih ID tidak ditemukan dalam sesi')
         return render(request, 'front/error.html', {'message': 'Pemilih ID tidak ditemukan dalam sesi'}, status=400)
     
     pemilih = get_object_or_404(Pemilih, id=pemilih_id)
-    
-    public_key = load_public_key(pemilih)
+    private_key = load_private_key(pemilih)
     
     decrypted_votes = []
-    votings = Voting.objects.filter(judul_pemilihan=pemilihan.judul)
-    
     for vote in votings:
         try:
-            decrypted_nama_pemilih = vote.nama_pemilih  # Tidak perlu dekripsi karena sudah plaintext
-            decrypted_nama_kandidat = decrypt_with_public_key(public_key, vote.nama_kandidat)
-            decrypted_judul_pemilihan = vote.judul_pemilihan
+            logger.debug(f"Encrypted Kandidat Name: {vote.nama_kandidat}")
+            decrypted_nama_kandidat = decrypt_with_private_key(private_key, vote.nama_kandidat)
+            logger.debug(f"Decrypted Kandidat Name: {decrypted_nama_kandidat}")
+            
+            # logger.debug(f"Encrypted Judul Pemilihan: {vote.judul_pemilihan}")
+            # decrypted_judul_pemilihan = decrypt_with_private_key(private_key, vote.judul_pemilihan)
+            # logger.debug(f"Decrypted Judul Pemilihan: {decrypted_judul_pemilihan}")
             
             decrypted_votes.append({
-                'nama_pemilih': decrypted_nama_pemilih,
+                'nama_pemilih': vote.nama_pemilih,
                 'nama_kandidat': decrypted_nama_kandidat,
-                'judul_pemilihan': decrypted_judul_pemilihan,
+                'judul_pemilihan':vote.judul_pemilihan,
                 'waktu_voting': vote.waktu_voting,
             })
         except Exception as e:
-            print(f"Error decrypting vote: {e}")
+            logger.error(f"Error decrypting vote: {e}")
             continue
     
+    form = VotingForm()
+    template_name = 'front/hasil_pemilihan.html'
     context = {
         'pemilihan': pemilihan,
         'decrypted_votes': decrypted_votes,
+        'form': form,
     }
-    
-    return render(request, 'front/hasil_pemilihan.html', context)
+    return render(request, template_name, context)
+
     
 def voting_success(request):
         # Cek login

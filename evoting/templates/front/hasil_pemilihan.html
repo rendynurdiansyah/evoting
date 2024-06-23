@@ -1,5 +1,3 @@
-<!-- hasil_pemilihan.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,13 +8,15 @@
     <h1>Hasil Pemilihan: {{ pemilihan.judul }}</h1>
 
     <ul>
-    {% for vote in decrypted_votes %}
+    {% for voting in decrypted_votes %}
         <li>
-            <strong>Nama Pemilih:</strong> {{ vote.nama_pemilih }}<br>
-            <strong>Nama Kandidat:</strong> {{ vote.nama_kandidat }}<br>
-            <strong>Judul Pemilihan:</strong> {{ vote.judul_pemilihan }}<br>
-            <strong>Waktu Voting:</strong> {{ vote.waktu_voting }}
+            <strong>Nama Pemilih:</strong> {{ voting.nama_pemilih }}<br>
+            <strong>Nama Kandidat:</strong> {{ voting.nama_kandidat }}<br>
+            <strong>Judul Pemilihan:</strong> {{ voting.judul_pemilihan }}<br>
+            <strong>Waktu Voting:</strong> {{ voting.waktu_voting }}
         </li>
+    {% empty %}
+        <li>Belum ada voting untuk pemilihan ini.</li>
     {% endfor %}
     </ul>
 </body>

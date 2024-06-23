@@ -1,0 +1,45 @@
+{% extends "back/layouts/base.html" %}
+
+{% block title %} Hasil Voting {% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header card-header-primary">
+                <h4 class="card-title">Hasil Voting untuk {{ title }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead class="text-primary">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nama Pemilih</th>
+                                <th>Nama Kandidat</th>
+                                <th>Judul Pemilihan</th>
+                                <th>Waktu Voting</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for voting in decrypted_votes %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ voting.nama_pemilih }}</td>
+                                <td>{{ voting.nama_kandidat }}</td>
+                                <td>{{ voting.judul_pemilihan }}</td>
+                                <td>{{ voting.waktu_voting }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">Belum ada voting untuk pemilihan ini.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
