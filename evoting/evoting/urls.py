@@ -29,6 +29,7 @@ urlpatterns = [
     path('voting/success/', voting_success, name='voting_success'),
     path('voting_already_used/', voting_already_used, name='voting_already_used'),
     path('sorry/', sorry, name='sorry'),
+    path('pemilihan/<int:pemilihan_id>/hasil/', hasil_pemilihan, name='hasil_pemilihan'),
 
     
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,0 +1,23 @@
+<!-- hasil_pemilihan.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hasil Pemilihan</title>
+</head>
+<body>
+    <h1>Hasil Pemilihan: {{ pemilihan.judul }}</h1>
+
+    <ul>
+    {% for vote in decrypted_votes %}
+        <li>
+            <strong>Nama Pemilih:</strong> {{ vote.nama_pemilih }}<br>
+            <strong>Nama Kandidat:</strong> {{ vote.nama_kandidat }}<br>
+            <strong>Judul Pemilihan:</strong> {{ vote.judul_pemilihan }}<br>
+            <strong>Waktu Voting:</strong> {{ vote.waktu_voting }}
+        </li>
+    {% endfor %}
+    </ul>
+</body>
+</html>

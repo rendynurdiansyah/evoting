@@ -1,16 +1,23 @@
 from django.db import models
-import uuid
+import secrets
+from .utilsRSA import *
+
 
 class Pemilihan(models.Model):
     judul = models.CharField(max_length=200, verbose_name="Judul")
     waktu_mulai = models.DateTimeField(verbose_name="Waktu Mulai")
     waktu_selesai = models.DateTimeField(verbose_name="Waktu Selesai")
-    token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    token = models.CharField(max_length=32, editable=False, unique=True)
     pemilih = models.ManyToManyField('Pemilih', related_name='pemilihan', blank=True)
     is_election_closed = models.BooleanField(default=False, verbose_name="Pemilihan Ditutup")
 
     def __str__(self):
         return self.judul
+
+    def save(self, *args, **kwargs):
+        if not self.token:
+            self.token = secrets.token_hex(6)  # Menghasilkan string heksadesimal random dengan panjang 32 karakter
+        super().save(*args, **kwargs)
 
 class Pemilih(models.Model):
     nama = models.TextField( blank=True, null=True)
@@ -35,9 +42,10 @@ class Kandidat(models.Model):
         return self.nama
 
 class Voting(models.Model):
-    nama_pemilih = models.CharField(max_length=200,blank=True, null=True)
-    nama_kandidat = models.CharField(max_length=100,blank=True, null=True)
-    judul_pemilihan = models.CharField(max_length=200,blank=True, null=True)
+    nama_pemilih = models.CharField(max_length=200, blank=True, null=True)
+    nama_kandidat = models.CharField(max_length=100, blank=True, null=True)
+    nama_kandidat_dekripsi = models.CharField(max_length=100, blank=True, null=True)  # Field untuk hasil dekripsi
+    judul_pemilihan = models.CharField(max_length=200, blank=True, null=True)
     waktu_voting = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

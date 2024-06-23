@@ -19,6 +19,7 @@
                     <h5 class="card-title">{{ pemilihan.judul }}</h5>
                     <p class="card-text">Deskripsi: {{ pemilihan.deskripsi }}</p>
                     <a href="{% url 'statistik' pemilihan.id %}" class="btn btn-primary">Lihat Statistik</a>
+                    <a href="{% url 'hasil_pemilihan' pemilihan.id %}" class="btn btn-primary">Lihat Hasil</a>
                   </div>
                 </div>
               </div>
