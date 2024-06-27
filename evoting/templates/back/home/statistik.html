@@ -1,42 +1,65 @@
 {% extends "back/layouts/base.html" %}
 
-{% block title %} Dashboard Admin E-Voting Inter Kampus {% endblock %}
-
-<!-- Specific Page CSS goes HERE  -->
-{% block stylesheets %}
-<style>
-    .pemilihan-list {
-        list-style-type: none;
-        padding: 0;
-    }
-    .pemilihan-list li {
-        margin-bottom: 10px;
-    }
-    .btn-lihat-statistik {
-        margin-left: 10px;
-    }
-</style>
-{% endblock stylesheets %}
+{% block title %}Laporan Statistik{% endblock %} 
 
 {% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header card-header-primary">
+                <h4 class="card-title">Laporan Statistik</h4>
+                <p class="card-category">E-Voting Organisasi Inter Universitas Muhammadiyah Kalimantan Timur</p>
+            </div>
+            <div class="card-body">
 
-    <div class="row">
-        <div class="col-md-12">
-            <h2>Daftar Pemilihan</h2>
-            <ul class="pemilihan-list">
-                {% for pemilihan in pemilihans %}
-                <li>
-                    <strong>{{ pemilihan.judul }}</strong> - {{ pemilihan.deskripsi }}
-                    <a href="" class="btn btn-info btn-lihat-statistik">Lihat Statistik</a>
-                    <a href="{% url "hasil_voting" pemilihan.id %}" class="btn btn-info btn-lihat-statistik">Lihat hasil</a>
-                </li>
-                {% endfor %}
-            </ul>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead class="text-primary">
+                            <tr>
+                                <th>No</th>
+                                <th>Judul Pemilihan</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pemilihan in pemilihans %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ pemilihan.judul }}</td>
+                                <td>
+                                    {% if pemilihan.is_election_closed == 0 %}
+                                        <span class="text-success">Sedang Berlangsung</span> 
+                                    {% else %}
+                                        <span class="text-danger">Sudah Selesai</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if pemilihan.is_election_closed == 0 %}
+                                        <button class="btn btn-bg-primary" onclick="showAlert()">Lihat Statistik</button>
+                                    {% else %}
+                                        <a href="#" type="button" class="btn btn-primary">Lihat Statistik</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
+</div>
+
+<script>
+    function showAlert() {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Pemberitahuan',
+            text: 'Pemilihan belum selesai!',
+            confirmButtonText: 'OK'
+        });
+    }
+</script>
 
 {% endblock content %}
-
-{% block scripts %}
-<!-- Page Specific Custom Scripts -->
-{% endblock scripts %}

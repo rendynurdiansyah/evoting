@@ -1,8 +1,9 @@
 {% extends "back/layouts/base.html" %}
 
-{% block title %} Daftar Pemilih {% endblock %} 
+{% block title %} UI Tables {% endblock %} 
 
 {% block content %}
+
 <div class="row">
     <div class="col-md-12">
         <div class="card">
@@ -16,7 +17,7 @@
                 </button>
 
                 <!-- Create Modal -->
-                <div class="modal fade{% if create_errors %} show{% endif %}" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="{% if create_errors %}false{% else %}true{% endif %}">
+                <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -28,43 +29,28 @@
                                     {% csrf_token %}
                                     <div class="mb-3">
                                         <label for="createNama" class="form-label">Nama</label>
-                                        <input type="text" class="form-control" id="createNama" name="nama" value="{{ create_form.nama.value }}" required>
-                                        {% if create_form.nama.errors %}
-                                            <div class="text-danger">{{ create_form.nama.errors|striptags }}</div>
-                                        {% endif %}
+                                        <input type="text" class="form-control" id="createNama" name="nama">
                                     </div>
                                     <div class="mb-3">
                                         <label for="createNim" class="form-label">NIM</label>
-                                        <input type="text" class="form-control" id="createNim" name="nim" value="{{ create_form.nim.value }}" required>
-                                        {% if create_form.nim.errors %}
-                                            <div class="text-danger">{{ create_form.nim.errors|striptags }}</div>
-                                        {% endif %}
+                                        <input type="text" class="form-control" id="createNim" name="nim">
                                     </div>
                                     <div class="mb-3">
                                         <label for="createProdi" class="form-label">Prodi</label>
-                                        <input type="text" class="form-control" id="createProdi" name="prodi" value="{{ create_form.prodi.value }}" required>
-                                        {% if create_form.prodi.errors %}
-                                            <div class="text-danger">{{ create_form.prodi.errors|striptags }}</div>
-                                        {% endif %}
+                                        <input type="text" class="form-control" id="createProdi" name="prodi">
                                     </div>
                                     <div class="mb-3">
-                                    <label for="createOrgHima" class="form-label">Organisasi HIMA</label>
-                                    <select class="form-control" id="createOrgHima" name="org_hima" required>
-                                        <option value="HIMA A" {% if create_form.org_hima.value == "HIMA A" %}selected{% endif %}>HIMA A</option>
-                                        <option value="HIMA B" {% if create_form.org_hima.value == "HIMA B" %}selected{% endif %}>HIMA B</option>
-                                        <option value="HIMA C" {% if create_form.org_hima.value == "HIMA C" %}selected{% endif %}>HIMA C</option>
-                                        <!-- Tambahkan pilihan HIMA sesuai kebutuhan -->
-                                    </select>
-                                    {% if create_form.org_hima.errors %}
-                                        <div class="text-danger">{{ create_form.org_hima.errors|striptags }}</div>
-                                    {% endif %}
-                                </div>
-                                <div class="mb-3">
+                                      <label for="createOrgHima" class="form-label">Organisasi HIMA</label>
+                                      <select class="form-control" id="createOrgHima" name="org_hima">
+                                          <option value="HIMA A">HIMA A</option>
+                                          <option value="HIMA B">HIMA B</option>
+                                          <option value="HIMA C">HIMA C</option>
+                                          <!-- Tambahkan pilihan HIMA sesuai kebutuhan -->
+                                      </select>
+                                  </div>
+                                  <div class="mb-3">
                                     <label for="createOrgUkm" class="form-label">Organisasi UKM</label>
-                                    <input type="text" class="form-control" id="createOrgUkm" name="org_ukm" value="{{ create_form.org_ukm.value }}" required>
-                                    {% if create_form.org_ukm.errors %}
-                                        <div class="text-danger">{{ create_form.org_ukm.errors|striptags }}</div>
-                                    {% endif %}
+                                    <input type="text" class="form-control" id="createOrgUkm" name="org_ukm">
                                 </div>                                
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -75,7 +61,6 @@
                         </div>
                     </div>
                 </div>
-                
                 <div class="table-responsive">
                     <table class="table">
                         <thead class="text-primary">
@@ -96,13 +81,13 @@
                                 <td>{{ pemilih.prodi }}</td>
                                 <td>{{ pemilih.org_hima }}</td>
                                 <td>
-                                {% with pemilih.org_ukm|safe as org_ukm_json %}
-                                    <script>
-                                        var orgUkm = JSON.parse('{{ org_ukm_json|escapejs }}');
+                                  {% with pemilih.org_ukm|safe as org_ukm_json %}
+                                      <script>
+                                          var orgUkm = JSON.parse('{{ org_ukm_json|escapejs }}');
                                           for (var i = 0; i < orgUkm.length; i++) {
                                               document.write(orgUkm[i].value);
                                               if (i < orgUkm.length - 1) {
-                                                document.write(', ');
+                                                  document.write(', ');
                                               }
                                           }
                                       </script>
@@ -111,7 +96,7 @@
                                 <td>
                                    <!-- Edit Modal -->
                                       <button type="button" class="btn btn-warning js-edit" data-bs-toggle="modal" data-bs-target="#editModal{{ pemilih.id }}">Edit</button>
-                                      <div class="modal fade{% if edit_errors and edit_pemilih_id == pemilih.id %} show{% endif %}" id="editModal{{ pemilih.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ pemilih.id }}" aria-hidden="{% if edit_errors and edit_pemilih_id == pemilih.id %}false{% else %}true{% endif %}">
+                                      <div class="modal fade" id="editModal{{ pemilih.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ pemilih.id }}" aria-hidden="true">
                                           <div class="modal-dialog">
                                               <div class="modal-content">
                                                   <div class="modal-header">
@@ -123,43 +108,28 @@
                                                           {% csrf_token %}
                                                           <div class="mb-3">
                                                               <label for="editNama{{ pemilih.id }}" class="form-label">Nama</label>
-                                                              <input type="text" class="form-control" id="editNama{{ pemilih.id }}" name="nama" value="{{ edit_form.nama.value }}" required>
-                                                              {% if edit_form.nama.errors %}
-                                                                  <div class="text-danger">{{ edit_form.nama.errors|striptags }}</div>
-                                                              {% endif %}
+                                                              <input type="text" class="form-control" id="editNama{{ pemilih.id }}" name="nama" value="{{ pemilih.nama }}">
                                                           </div>
                                                           <div class="mb-3">
                                                               <label for="editNim{{ pemilih.id }}" class="form-label">NIM</label>
-                                                              <input type="text" class="form-control" id="editNim{{ pemilih.id }}" name="nim" value="{{ edit_form.nim.value }}" required>
-                                                              {% if edit_form.nim.errors %}
-                                                                  <div class="text-danger">{{ edit_form.nim.errors|striptags }}</div>
-                                                              {% endif %}
+                                                              <input type="text" class="form-control" id="editNim{{ pemilih.id }}" name="nim" value="{{ pemilih.nim }}">
                                                           </div>
                                                           <div class="mb-3">
                                                               <label for="editProdi{{ pemilih.id }}" class="form-label">Prodi</label>
-                                                              <input type="text" class="form-control" id="editProdi{{ pemilih.id }}" name="prodi" value="{{ edit_form.prodi.value }}" required>
-                                                              {% if edit_form.prodi.errors %}
-                                                                  <div class="text-danger">{{ edit_form.prodi.errors|striptags }}</div>
-                                                              {% endif %}
+                                                              <input type="text" class="form-control" id="editProdi{{ pemilih.id }}" name="prodi" value="{{ pemilih.prodi }}">
                                                           </div>
                                                           <div class="mb-3">
                                                               <label for="editOrgHima{{ pemilih.id }}" class="form-label">Organisasi HIMA</label>
-                                                              <select class="form-control" id="editOrgHima{{ pemilih.id }}" name="org_hima" required>
-                                                                  <option value="HIMA A" {% if edit_form.org_hima.value == "HIMA A" %}selected{% endif %}>HIMA A</option>
-                                                                  <option value="HIMA B" {% if edit_form.org_hima.value == "HIMA B" %}selected{% endif %}>HIMA B</option>
-                                                                  <option value="HIMA C" {% if edit_form.org_hima.value == "HIMA C" %}selected{% endif %}>HIMA C</option>
+                                                              <select class="form-control" id="editOrgHima{{ pemilih.id }}" name="org_hima">
+                                                                  <option value="HIMA A">HIMA A</option>
+                                                                  <option value="HIMA B">HIMA B</option>
+                                                                  <option value="HIMA C">HIMA C</option>
                                                                   <!-- Tambahkan pilihan HIMA sesuai kebutuhan -->
                                                               </select>
-                                                              {% if edit_form.org_hima.errors %}
-                                                                  <div class="text-danger">{{ edit_form.org_hima.errors|striptags }}</div>
-                                                              {% endif %}
                                                           </div>
                                                           <div class="mb-3">
                                                             <label for="editOrgUkm{{ pemilih.id }}" class="form-label">Organisasi UKM</label>
-                                                            <input type="text" class="form-control org-ukm-input" id="editOrgUkm{{ pemilih.id }}" name="org_ukm" value="{{ edit_form.org_ukm.value }}" required>
-                                                            {% if edit_form.org_ukm.errors %}
-                                                                <div class="text-danger">{{ edit_form.org_ukm.errors|striptags }}</div>
-                                                            {% endif %}
+                                                            <input type="text" class="form-control org-ukm-input" id="editOrgUkm{{ pemilih.id }}" name="org_ukm" value="{{ pemilih.org_ukm }}">
                                                           </div>                                                        
                                                           <div class="modal-footer">
                                                               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -203,31 +173,20 @@
 </div>
 
 {% endblock content %}
-
 {% block javascripts %}
 <script>
   $(document).ready(function() {
       // Inisialisasi Tagify
       var input = document.getElementById('createOrgUkm');
       new Tagify(input);
-
-      // Fungsi untuk menginisialisasi Tagify setelah modal ditampilkan
-      $('.modal').on('shown.bs.modal', function (e) {
-          var input = $(this).find('.org-ukm-input');
-          new Tagify(input.get(0));
-      });
-
-      // Membuka modal create jika ada kesalahan
-      {% if create_errors %}
-      var createModal = new bootstrap.Modal(document.getElementById('createModal'));
-      createModal.show();
-      {% endif %}
-
-      // Membuka modal edit jika ada kesalahan
-      {% if edit_errors %}
-      var editModal = new bootstrap.Modal(document.getElementById('editModal{{ edit_pemilih_id }}'));
-      editModal.show();
-      {% endif %}
   });
 </script>
+<script>
+  // Fungsi untuk menginisialisasi Tagify setelah modal ditampilkan
+  $('.modal').on('shown.bs.modal', function (e) {
+    var input = $(this).find('.org-ukm-input');
+    new Tagify(input.get(0));
+  });
+</script>
+
 {% endblock javascripts %}

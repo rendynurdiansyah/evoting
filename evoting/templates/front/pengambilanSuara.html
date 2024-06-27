@@ -5,29 +5,29 @@
 <h1 class="text-center my-4">{{ pemilihan.judul }}</h1>
 <div class="amazing-deals">
   <div class="container">
-    <div class="row">
-      <div class="col-lg-6 offset-lg-3">
-        <div class="section-heading text-center text-white">
-          <h2 style="color: white;">{{ pemilihan.judul }}</h2>
+    <div class="row justify-content-center">
+      <div class="col-lg-12">
+        <div class="section-heading text-center text-black">
+          <h2 style="color: black;">{{ pemilihan.judul }}</h2>
           <p>{{ pemilihan.deskripsi }}</p>
         </div>
       </div>
+      <br>
       {% for kandidat in kandidats %}
-      <div class="col-lg-6 col-sm-6 my-3">
-        <div class="card">
+      <div class="col-lg-4 col-md-6 my-3">
+        <div class="card candidate-card">
           <div class="row no-gutters">
-            <div class="col-lg-6">
-              <div class="image">
-                <img src="{{ kandidat.foto.url }}" class="card-img" alt="{{ kandidat.nama }}">
+            <div class="col-lg-12">
+              <div class="image text-center">
+                <img src="{{ kandidat.foto.url }}" class="card-img-top" alt="{{ kandidat.nama }}">
               </div>
             </div>
-            <div class="col-lg-6 align-self-center">
-              <div class="card-body">
+            <div class="col-lg-12 align-self-center">
+              <div class="card-body text-center">
                 <h4 class="card-title">{{ kandidat.nama }}</h4>
-                <p class="card-text">{{ kandidat.visi_misi }}</p>
-                <p>Pemilih nama: {{ pemilih.nama }}</p>
+                <a href="" type="button" class="btn btn-info my-2">Detail</a>
                 <!-- Button trigger modal -->
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#voteModal{{ kandidat.id }}">
+                <button type="button" class="btn btn-success my-2" data-bs-toggle="modal" data-bs-target="#voteModal{{ kandidat.id }}">
                   Vote
                 </button>
 
@@ -39,7 +39,7 @@
                         <h5 class="modal-title" id="voteModalLabel{{ kandidat.id }}">Verifikasi Suara</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                       </div>
-                      <div class="modal-body">
+                      <div class="modal-body text-center">
                         <h5>Apakah Anda yakin dengan pilihan Anda?</h5>
                         <form id="voteForm{{ kandidat.id }}">
                           {% csrf_token %}
@@ -80,71 +80,115 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 $(document).ready(function() {
-  $('.js-vote-confirm').click(function() {
-    var kandidatId = $(this).data('kandidat-id');
-    var pemilihanId = $(this).data('pemilihan-id');
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
     var csrfToken = getCookie('csrftoken');
 
+    $('.js-vote-confirm').click(function() {
+        var kandidatId = $(this).data('kandidat-id');
+        var pemilihanId = $(this).data('pemilihan-id');
+        var signatureDsa = $('#signature-dsa' + kandidatId).val();
 
-    // Ambil tanda tangan DSA dari halaman (misalnya, dari elemen dengan ID 'signature-dsa')
-    var signatureDsa = $('#signature-dsa' + kandidatId).val();
-
-    $.ajax({
-      url: '{% url "vote" pemilihan.id %}',
-      type: 'POST',
-      headers: {
-        'X-Dsa-Signature': signatureDsa // Simpan tanda tangan DSA di headers HTTP
-      },
-      data: {
-        'kandidat_id': kandidatId,
-        'csrfmiddlewaretoken': csrfToken
-      },
-      success: function(response) {
-        if (response.status === 'success') {
-          Swal.fire({
-            icon: 'success',
-            title: 'Voting Berhasil!',
-            text: 'Terima kasih telah memberikan suara Anda.',
-          }).then(function() {
-            window.location.href = '{% url "voting_success" %}';
-          });
-        } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: response.message || 'Terjadi kesalahan saat memberikan suara.',
-          }).then(function() {
-            window.location.href = '{% url "voting_already_used" %}';
-          });
-        }
-      },
-      error: function(xhr, status, error) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Oops...',
-          text: 'Terjadi kesalahan saat mengirim voting.'
-        }).then(function() {
-          window.location.href = '{% url "voting_already_used" %}';
+        console.log('Mengirim permintaan AJAX dengan header:', {
+            'X-Vote-Signature': signatureDsa,
+            'X-CSRFToken': csrfToken
         });
-      }
-    });
-  });
 
-  function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        // Does this cookie string begin with the name we want?
-        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
-  }
+        $.ajax({
+            url: '{% url "vote" pemilihan.id %}',
+            type: 'POST',
+            headers: {
+                'X-Vote-Signature': signatureDsa,
+                'X-CSRFToken': csrfToken
+            },
+            data: {
+                'kandidat_id': kandidatId,
+                'csrfmiddlewaretoken': csrfToken
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Voting Berhasil!',
+                        text: 'Terima kasih telah memberikan suara Anda.',
+                    }).then(function() {
+                        window.location.href = '{% url "pemilih_logout" %}';
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: response.message || 'Suara Anda Sudah Digunakan.',
+                    }).then(function() {
+                        window.location.href = '{% url "pemilih_logout" %}';
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Suara Anda Sudah Digunakan.'
+                }).then(function() {
+                    window.location.href = '{% url "pemilih_logout" %}';
+                });
+            }
+        });
+    });
 });
 </script>
+
+<style>
+  .candidate-card {
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transition: 0.3s;
+      border-radius: 10px;
+      overflow: hidden;
+  }
+
+  .candidate-card:hover {
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  .card-img-top {
+      width: 100%;
+      height: auto;
+      border-bottom: 1px solid #f0f0f0;
+  }
+
+  .btn-info, .btn-success {
+      width: 100%;
+  }
+
+  .modal-content {
+      border-radius: 15px;
+  }
+
+  .modal-header {
+      border-bottom: none;
+  }
+
+  .modal-footer {
+      border-top: none;
+  }
+
+  .btn-close {
+      background-color: transparent;
+      border: none;
+      font-size: 1.5rem;
+  }
+</style>
 {% endblock %}

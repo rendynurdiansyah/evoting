@@ -22,7 +22,6 @@ def admin_logout(request):
     logout(request)
     return redirect('admin_login')
 
-
 def admin_register(request):
     if request.method == 'POST':
         username = request.POST['username']

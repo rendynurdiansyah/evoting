@@ -2,32 +2,180 @@
 {% load static %}
 
 {% block content %}
-  <section id="section-1" class="mt-5">
+<style>
+  /* General Styles */
+.custom-body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f0f0f0; /* Light gray background for the whole page */
+}
+
+.custom-section {
+  padding: 20px 0;
+}
+
+.custom-mt-5 {
+  margin-top: 3rem;
+}
+
+/* Content Slider Styles */
+.custom-content-slider {
+  position: relative;
+}
+
+.custom-slider {
+  overflow: hidden;
+  width: 100%;
+  margin-bottom: 20px; /* Added margin-bottom for spacing between items */
+}
+
+.custom-rounded {
+  border-radius: 100px; /* Increased border-radius for more rounded corners */
+}
+
+.custom-shadow {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.custom-bg-gray {
+  background-color: #d3d3d3; /* Light gray background for content boxes */
+}
+
+/* Icon Box Styles */
+.custom-icon-box {
+  text-align: center;
+}
+
+.custom-icon-box i {
+  font-size: 48px;
+  color: #007bff;
+}
+
+.custom-icon-box h4 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 10px 0 0;
+}
+
+.custom-icon-box h4 span {
+  font-size: 24px;
+  font-weight: 700;
+  display: block;
+}
+
+/* Main Button Styles */
+.custom-main-button .custom-btn {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 30px;
+  transition: background-color 0.3s ease;
+}
+
+.custom-main-button .custom-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Card Styles */
+.custom-card {
+  border: none;
+  border-radius: 50px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.custom-card-body {
+  padding: 20px;
+}
+
+.custom-card-title {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.custom-card-text {
+  font-size: 16px;
+  margin-bottom: 15px;
+}
+
+/* Responsive Styles */
+@media (max-width: 991.98px) {
+  .custom-col-lg-4 {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .custom-col-sm-6,
+  .custom-col-6,
+  .custom-col-lg-4 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .custom-icon-box {
+    margin-bottom: 20px;
+  }
+
+  .custom-main-button {
+    text-align: center;
+    margin-top: 20px;
+  }
+}
+</style>
+
+<body class="custom-body">
+  <section id="section-1" class="custom-section custom-mt-5">
     <div class="container">
       <div class="row justify-content-center">
-        <div class="col-lg-8">
-          <div class="content-section">
-            <div class="section-heading text-center">
-              <br><br>
-              <h2>Daftar Pemilihan</h2>
-            </div>
-            <div class="row">
-              {% for pemilihan in pemilihans %}
-              <div class="col-lg-6 mb-4">
-                <div class="card">
-                  <div class="card-body">
-                    <h5 class="card-title">{{ pemilihan.judul }}</h5>
-                    <p class="card-text">Deskripsi: {{ pemilihan.deskripsi }}</p>
-                    <a href="{% url 'statistik' pemilihan.id %}" class="btn btn-primary">Lihat Statistik</a>
-                    <a href="{% url 'hasil_pemilihan' pemilihan.id %}" class="btn btn-primary">Lihat Hasil</a>
+        <div class="section-heading text-center">
+          <h2>Daftar Pemilihan</h2>
+        </div>
+        {% for pemilihan in pemilihans %}
+        <div class="col-lg-10 mb-4"> <!-- Added mb-4 for bottom margin -->
+          <div class="custom-content-slider">
+            <div class="custom-slider">
+              <div class="row align-items-center text-center custom-rounded custom-shadow p-4 custom-bg-gray">
+                <h5 class="custom-card-title">{{ pemilihan.judul }}</h5>
+                <div class="col-lg-3 ">
+                  <div class="custom-icon-box">
+                    <i class="fa fa-clock"></i>
+                    <h6 class="mt-3"><span>Waktu Mulai</span><br>{{ pemilihan.waktu_mulai }}</h6>
+                  </div>
+                </div>
+                <div class="col-lg-3 ">
+                  <div class="custom-icon-box">
+                    <i class="fa fa-clock"></i>
+                    <h6 class="mt-3"><span>Waktu Selesai</span><br>{{ pemilihan.waktu_selesai }}</h6>
+                  </div>
+                </div>
+                <div class="col-lg-3 ">
+                  <div class="custom-icon-box">
+                    <i class="fa fa-user"></i>
+                    <h6 class="mt-3"><span>Jumlah Kandidat</span><br>{{ pemilihan.jumlah_kandidat }}</h6>
+                  </div>
+                </div>
+                <div class="col-lg-3 ">
+                  <div class="custom-icon-box">
+                    <i class="fa fa-user"></i>
+                    <h6 class="mt-3"><span>Jumlah Pemilih</span><br>{{ pemilihan.jumlah_pemilih }}</h6>
+                  </div>
+                </div>
+                <div class="col-lg-12">
+                  <div class="custom-main-button">
+                    <a href="{% url 'hasil_pemilihan' pemilihan.id %}" class="custom-btn btn-primary">Klik Untuk Lihat Statistik</a>
                   </div>
                 </div>
               </div>
-              {% endfor %}
             </div>
           </div>
         </div>
+        {% endfor %}
       </div>
     </div>
   </section>
+</body>
 {% endblock %}

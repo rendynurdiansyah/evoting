@@ -264,10 +264,10 @@ def laporan_statistik(request):
 #     decrypted_votes = []
 #     for vote in votings:
 #         try:
-#             # decrypted_nama_kandidat = decrypt_with_public_key(public_key, vote.nama_kandidat)
+#             decrypted_nama_kandidat = decrypt_with_public_key(public_key, vote.nama_kandidat)
 #             decrypted_votes.append({
 #                 'nama_pemilih': vote.nama_pemilih,  # Nama pemilih tidak dienkripsi
-#                 'nama_kandidat': vote.nama_kandidat,
+#                 'nama_kandidat': decrypted_nama_kandidat,
 #                 'judul_pemilihan': vote.judul_pemilihan,  # Judul pemilihan tidak dienkripsi
 #                 'waktu_voting': vote.waktu_voting,
 #             })
