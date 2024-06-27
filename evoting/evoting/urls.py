@@ -30,7 +30,8 @@ urlpatterns = [
     path('voting_already_used/', voting_already_used, name='voting_already_used'),
     path('sorry/', sorry, name='sorry'),
     path('pemilihan/<int:pemilihan_id>/hasil/', hasil_pemilihan, name='hasil_pemilihan'),
-    path('api/hasil-pemilihan/<int:pemilihan_id>/', api_hasil_pemilihan, name='api_hasil_pemilihan'),
+
+    path('get_private_key/', get_private_key, name='get_private_key'),
 
     
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -47,7 +47,7 @@
                           <input type="hidden" name="kandidat_id" value="{{ kandidat.id }}">
                         </form>
                         <!-- Hidden input for DSA signature -->
-                        <input type="hidden" id="signature-dsa{{ kandidat.id }}" value="{{ kandidat.dsa_signature }}">
+                        <input type="hidden" id="signature-dsa{{ kandidat.id }}">
                       </div>
                       <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kembali</button>
@@ -80,6 +80,34 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 $(document).ready(function() {
+    async function generateKey() {
+        const keyPair = await window.crypto.subtle.generateKey(
+            {
+                name: "ECDSA",
+                namedCurve: "P-256",
+            },
+            true,
+            ["sign", "verify"]
+        );
+        return keyPair;
+    }
+
+    async function signData(keyPair, data) {
+        const encoder = new TextEncoder();
+        const dataBuffer = encoder.encode(data);
+
+        const signature = await window.crypto.subtle.sign(
+            {
+                name: "ECDSA",
+                hash: { name: "SHA-256" },
+            },
+            keyPair.privateKey,
+            dataBuffer
+        );
+
+        return signature;
+    }
+
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -97,21 +125,21 @@ $(document).ready(function() {
 
     var csrfToken = getCookie('csrftoken');
 
-    $('.js-vote-confirm').click(function() {
+    $('.js-vote-confirm').click(async function() {
         var kandidatId = $(this).data('kandidat-id');
         var pemilihanId = $(this).data('pemilihan-id');
-        var signatureDsa = $('#signature-dsa' + kandidatId).val();
 
-        console.log('Mengirim permintaan AJAX dengan header:', {
-            'X-Vote-Signature': signatureDsa,
-            'X-CSRFToken': csrfToken
-        });
+        const keyPair = await generateKey();
+        const message = `vote-${kandidatId}-${pemilihanId}`;
+        const signature = await signData(keyPair, message);
+
+        const signatureBase64 = btoa(String.fromCharCode(...new Uint8Array(signature)));
 
         $.ajax({
             url: '{% url "vote" pemilihan.id %}',
             type: 'POST',
             headers: {
-                'X-Vote-Signature': signatureDsa,
+                'X-Vote-Signature': signatureBase64,
                 'X-CSRFToken': csrfToken
             },
             data: {
