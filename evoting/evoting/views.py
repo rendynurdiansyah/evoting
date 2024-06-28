@@ -109,6 +109,21 @@ def get_private_key(request):
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': f'Failed to load private key: {str(e)}'}, status=500)
 @csrf_exempt
+
+def pemilihan_view(request, pemilihan_id):
+    pemilihan = get_object_or_404(Pemilihan, id=pemilihan_id)
+    kandidats = Kandidat.objects.filter(pemilihan=pemilihan)
+    pemilih = get_object_or_404(Pemilih, user=request.user)
+
+    # Simpan pemilih_id dalam sesi
+    request.session['pemilih_id'] = pemilih.id
+
+    context = {
+        'pemilihan': pemilihan,
+        'kandidats': kandidats,
+        'pemilih_id': pemilih.id,
+    }
+    return render(request, 'front/pengambilanSuara.html', context)
 def vote(request, pemilihan_id):
     pemilihan = get_object_or_404(Pemilihan, pk=pemilihan_id)
     kandidats = Kandidat.objects.filter(pemilihan=pemilihan)
@@ -119,9 +134,9 @@ def vote(request, pemilihan_id):
         return JsonResponse({'status': 'error', 'message': 'Pemilih ID tidak ditemukan dalam sesi'}, status=400)
 
     pemilih = get_object_or_404(Pemilih, id=pemilih_id)
-    
+
     voting = Voting.objects.filter(judul_pemilihan=pemilihan.judul, nama_pemilih=pemilih.nama).first()
-    
+
     if voting:
         logger.error('Pemilih telah memberikan suara untuk pemilihan ini')
         return JsonResponse({'status': 'error', 'message': 'Anda sudah memberikan suara untuk pemilihan ini'}, status=400)
@@ -135,7 +150,7 @@ def vote(request, pemilihan_id):
 
         kandidat = get_object_or_404(Kandidat, id=kandidat_id, pemilihan=pemilihan)
         logger.debug(f"Memproses permintaan voting untuk pemilihan ID: {pemilihan_id}")
-    
+
         # Tambahkan pernyataan logging untuk data penting
         logger.debug(f"kandidat_id: {request.POST.get('kandidat_id')}")
         logger.debug(f"X-Vote-Signature: {request.headers.get('X-Vote-Signature')}")
@@ -182,6 +197,7 @@ def vote(request, pemilihan_id):
     else:
         logger.error('Invalid request method')
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
+
 
 def hasil_pemilihan(request, pemilihan_id):
     pemilihan = get_object_or_404(Pemilihan, id=pemilihan_id)

@@ -29,9 +29,11 @@ urlpatterns = [
     path('voting/success/', voting_success, name='voting_success'),
     path('voting_already_used/', voting_already_used, name='voting_already_used'),
     path('sorry/', sorry, name='sorry'),
-    path('pemilihan/<int:pemilihan_id>/hasil/', hasil_pemilihan, name='hasil_pemilihan'),
+    path('pemilihan/<int:pemilihan_id>/', pemilihan_view, name='pemilihan_view'),
 
     path('get_private_key/', get_private_key, name='get_private_key'),
 
     
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+if settings.DEBUG:
+    urlpatterns += static('/keys/', document_root=os.path.join(settings.BASE_DIR, 'keys'))
