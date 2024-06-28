@@ -18,6 +18,8 @@ from cryptography.exceptions import InvalidSignature
 from dashboard.utilsRSA import *
 from dashboard.utilsDSA import *
 from io import BytesIO
+from django.conf import settings
+from django.http import HttpResponse, Http404
 from datetime import datetime
 from cryptography.hazmat.primitives import serialization
 import base64
@@ -91,39 +93,40 @@ def pengambilanSuara(request, pemilihan_id):
     kandidats = Kandidat.objects.filter(pemilihan=pemilihan)
     return render(request, 'front/pengambilanSuara.html', {'pemilihan': pemilihan,'kandidats': kandidats})
 
-def get_private_key(request):
-    pemilih = get_object_or_404(Pemilih, id=request.user.id)
-
-    # Path to private key file
-    private_key_path = f'keys/private_key_{pemilih.id}.pem'
-
+def get_private_key(request, pemilih_id):
     try:
-        # Load private key content
-        with open(private_key_path, 'rb') as f:
-            private_key_content = f.read()
+        pemilih = get_object_or_404(Pemilih, id=pemilih_id)
+        
+        # Pastikan hanya pemilih yang bersangkutan yang bisa mengakses kunci privatnya
+        if request.user.id != pemilih.id:
+            return JsonResponse({'error': 'Akses ditolak'}, status=403)
 
-        # Encode private key as base64 to send to client
-        private_key_base64 = private_key_content.encode('base64')
-
-        return JsonResponse({'status': 'success', 'private_key': private_key_base64})
-    except Exception as e:
-        return JsonResponse({'status': 'error', 'message': f'Failed to load private key: {str(e)}'}, status=500)
+        return JsonResponse({'private_key': pemilih.kunci_privat})
+    except Pemilih.DoesNotExist:
+        return JsonResponse({'error': 'Pemilih tidak ditemukan'}, status=404)
 @csrf_exempt
 
 def pemilihan_view(request, pemilihan_id):
     pemilihan = get_object_or_404(Pemilihan, id=pemilihan_id)
     kandidats = Kandidat.objects.filter(pemilihan=pemilihan)
-    pemilih = get_object_or_404(Pemilih, user=request.user)
 
-    # Simpan pemilih_id dalam sesi
-    request.session['pemilih_id'] = pemilih.id
+    # Retrieve pemilih_id from session
+    pemilih_id = request.session.get('pemilih_id')
+    print("Session pemilih_id in view:", pemilih_id)  # Debug line
+    
+    pemilih = None
+    if pemilih_id:
+        pemilih = get_object_or_404(Pemilih, id=pemilih_id)
+        print("Pemilih fetched:", pemilih)  # Debug line
 
     context = {
         'pemilihan': pemilihan,
         'kandidats': kandidats,
-        'pemilih_id': pemilih.id,
+        'pemilih': pemilih,
     }
     return render(request, 'front/pengambilanSuara.html', context)
+    
+@csrf_exempt
 def vote(request, pemilihan_id):
     pemilihan = get_object_or_404(Pemilihan, pk=pemilihan_id)
     kandidats = Kandidat.objects.filter(pemilihan=pemilihan)
@@ -157,18 +160,16 @@ def vote(request, pemilihan_id):
 
         try:
             # Verifikasi tanda tangan DSA
-            public_key_dsa = load_dsa_public_key(pemilih.id)
+            public_key_dsa = load_dsa_public_key(pemilih_id)
             message = f"vote-{kandidat_id}-{pemilihan_id}"
             signature = base64.b64decode(signature_b64)
-            if not public_key_dsa.verify(signature, message.encode('utf-8'), hashes.SHA256()):
-                logger.error('Tanda tangan tidak valid')
-                return JsonResponse({'status': 'error', 'message': 'Tanda tangan tidak valid'}, status=400)
+            public_key_dsa.verify(signature, message.encode('utf-8'), hashes.SHA1())
 
             # Menggunakan RSA untuk enkripsi nama kandidat
             public_key_rsa = load_public_key(pemilih)
-            encrypted_nama_pemilih = pemilih.nama
+            encrypted_nama_pemilih =  pemilih.nama
             encrypted_nama_kandidat = encrypt_with_public_key(public_key_rsa, kandidat.nama)
-            encrypted_judul_pemilihan = pemilihan.judul
+            encrypted_judul_pemilihan =  pemilihan.judul
             waktu_voting = datetime.now()
 
             # Simpan suara

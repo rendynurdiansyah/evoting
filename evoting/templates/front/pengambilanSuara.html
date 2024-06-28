@@ -9,7 +9,6 @@
       <div class="col-lg-12">
         <div class="section-heading text-center text-black">
           <h2 style="color: black;">{{ pemilihan.judul }}</h2>
-          <h2 style="color: black;">{{ pemilih.id }}</h2>
           <p>{{ pemilihan.deskripsi }}</p>
         </div>
       </div>
@@ -26,7 +25,6 @@
             <div class="col-lg-12 align-self-center">
               <div class="card-body text-center">
                 <h4 class="card-title">{{ kandidat.nama }}</h4>
-                <a href="" type="button" class="btn btn-info my-2">Detail</a>
                 <button type="button" class="btn btn-success my-2" data-bs-toggle="modal" data-bs-target="#voteModal{{ kandidat.id }}">
                   Vote
                 </button>
@@ -61,156 +59,115 @@
     </div>
   </div>
 </div>
-{% endblock %}
+{% endblock content %}
 
 {% block extra_js %}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/10.5.27/jsrsasign-all-min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/10.5.27/jsrsasign-all-min.js"></script>
 <script>
   $(document).ready(function() {
-    async function loadPrivateKey(pemilihId) {
-        console.log("Pemilih ID:", pemilihId); // Log pemilihId untuk debug
-        const response = await fetch(`/keys/private_key_${pemilihId}.pem`);
+    async function loadAndSignData(pemilihId, kandidatId, pemilihanId) {
+      try {
+        const response = await fetch(`/static/keys/private_key_${pemilihId}.pem`);
         if (!response.ok) {
-            console.error("Error loading private key:", response.status, response.statusText);
-            return null;
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
         const privateKeyPEM = await response.text();
+        console.log("Private Key PEM loaded:", privateKeyPEM.substr(0, 20) + "..."); // Log sebagian kecil dari PEM untuk debugging
 
-        const binaryDerString = window.atob(privateKeyPEM.replace(/-----[^-]+-----/g, "").replace(/\s/g, ""));
-        const binaryDer = str2ab(binaryDerString);
+        // Mendekode kunci PEM ke objek kunci JSRSASign
+        const privateKey = KEYUTIL.getKey(privateKeyPEM);
 
-        return await window.crypto.subtle.importKey(
-            'pkcs8',
-            binaryDer,
-            {
-                name: 'ECDSA',
-                namedCurve: 'P-256'
-            },
-            false,
-            ['sign']
-        );
-    }
+        // Membuat pesan yang akan ditandatangani
+        const message = `vote-${kandidatId}-${pemilihanId}`;
 
-    function str2ab(str) {
-        const buf = new ArrayBuffer(str.length);
-        const bufView = new Uint8Array(buf);
-        for (let i = 0, strLen = str.length; i < strLen; i++) {
-            bufView[i] = str.charCodeAt(i);
-        }
-        return buf;
-    }
+        // Melakukan penandatanganan menggunakan kunci pribadi
+        const sig = new KJUR.crypto.Signature({"alg": "SHA1withDSA"});
+        sig.init(privateKey);
+        sig.updateString(message);
+        const signatureHex = sig.sign();
 
-    async function signData(privateKey, data) {
-        const encoder = new TextEncoder();
-        const dataBuffer = encoder.encode(data);
+        // Mengubah hasil penandatanganan ke base64 untuk dikirimkan dalam permintaan
+        const signatureBase64 = hextob64(signatureHex);
 
-        const signature = await window.crypto.subtle.sign(
-            {
-                name: 'ECDSA',
-                hash: { name: 'SHA-256' },
-            },
-            privateKey,
-            dataBuffer
-        );
-
-        return signature;
-    }
-
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
+        // Kirim permintaan AJAX untuk melakukan voting
+        $.ajax({
+          url: "{% url "vote" pemilihan.id %}",
+          type: 'POST',
+          headers: {
+            'X-Vote-Signature': signatureBase64,
+            'X-CSRFToken': '{{ csrf_token }}'
+          },
+          data: {
+            'kandidat_id': kandidatId,
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+          },
+          success: function(response) {
+            if (response.status === 'success') {
+              Swal.fire({
+                icon: 'success',
+                title: 'Voting Berhasil!',
+                text: 'Terima kasih telah memberikan suara Anda.',
+              }).then(function() {
+                window.location.href = '{% url "pemilih_logout" %}';
+              });
+            } else {
+              Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: response.message || 'Suara Anda Sudah Digunakan.',
+              }).then(function() {
+                window.location.href = '{% url "pemilih_logout" %}';
+              });
             }
-        }
-        return cookieValue;
+          },
+          error: function(xhr, status, error) {
+            Swal.fire({
+              icon: 'error',
+              title: 'Oops...',
+              text: 'Suara Anda Sudah Digunakan.'
+            }).then(function() {
+              window.location.href = '{% url "pemilih_logout" %}';
+            });
+          }
+        });
+      } catch (error) {
+        console.error("Error loading or signing data:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'Gagal memuat atau menandatangani data. Silakan coba lagi.'
+        });
+      }
     }
-
-    var csrfToken = getCookie('csrftoken');
 
     $('.js-vote-confirm').click(async function() {
-        var kandidatId = $(this).data('kandidat-id');
-        var pemilihanId = $(this).data('pemilihan-id');
-        var pemilihId = $(this).data('pemilih-id'); 
+      var kandidatId = $(this).data('kandidat-id');
+      var pemilihanId = $(this).data('pemilihan-id');
+      var pemilihId = $(this).data('pemilih-id');
 
-        console.log("Kandidat ID:", kandidatId);
-        console.log("Pemilihan ID:", pemilihanId);
-        console.log("Pemilih ID:", pemilihId); // Log pemilihId untuk debug
+      console.log("Kandidat ID:", kandidatId);
+      console.log("Pemilihan ID:", pemilihanId);
+      console.log("Pemilih ID:", pemilihId);
 
-        if (!pemilihId) {
-            console.error("Pemilih ID is missing");
-            Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: 'Pemilih ID tidak ditemukan. Silakan coba lagi.'
-            });
-            return;
-        }
-
-        const privateKey = await loadPrivateKey(pemilihId);
-        if (!privateKey) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: 'Gagal memuat kunci pribadi. Silakan coba lagi.'
-            });
-            return;
-        }
-        
-        const message = `vote-${kandidatId}-${pemilihanId}`;
-        const signature = await signData(privateKey, message);
-
-        const signatureBase64 = btoa(String.fromCharCode(...new Uint8Array(signature)));
-
-        $.ajax({
-            url: '{% url "vote" pemilihan.id %}',
-            type: 'POST',
-            headers: {
-                'X-Vote-Signature': signatureBase64,
-                'X-CSRFToken': csrfToken
-            },
-            data: {
-                'kandidat_id': kandidatId,
-                'csrfmiddlewaretoken': csrfToken
-            },
-            success: function(response) {
-                if (response.status === 'success') {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Voting Berhasil!',
-                        text: 'Terima kasih telah memberikan suara Anda.',
-                    }).then(function() {
-                        window.location.href = '{% url "pemilih_logout" %}';
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: response.message || 'Suara Anda Sudah Digunakan.',
-                    }).then(function() {
-                        window.location.href = '{% url "pemilih_logout" %}';
-                    });
-                }
-            },
-            error: function(xhr, status, error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: 'Suara Anda Sudah Digunakan.'
-                }).then(function() {
-                    window.location.href = '{% url "pemilih_logout" %}';
-                });
-            }
+      if (!pemilihId) {
+        console.error("Pemilih ID is missing");
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'Pemilih ID tidak ditemukan. Silakan coba lagi.'
         });
+        return;
+      }
+
+      await loadAndSignData(pemilihId, kandidatId, pemilihanId);
     });
-});
+  });
 </script>
-{% endblock %}
+
+
+{% endblock extra_js %}
 
 <style>
   .candidate-card {

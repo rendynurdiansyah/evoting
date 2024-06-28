@@ -47,7 +47,8 @@ def pemilih_login(request):
         pemilih = get_object_or_404(Pemilih, nim=nim)
         request.session['pemilih_id'] = pemilih.id
         request.session['pemilih_nama'] = pemilih.nama
-        request.session['public_key'] = pemilih.public_key
+        # Print to verify session storage
+        print("Pemilih ID stored in session:", request.session.get('pemilih_id'))
         return redirect('voting')
     return render(request, 'accounts/login.html')
 
