@@ -13,10 +13,13 @@ from dashboard.forms import *
 import matplotlib.pyplot as plt
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
+from cryptography.hazmat.primitives.asymmetric import dsa, padding
+from cryptography.exceptions import InvalidSignature
 from dashboard.utilsRSA import *
 from dashboard.utilsDSA import *
 from io import BytesIO
 from datetime import datetime
+from cryptography.hazmat.primitives import serialization
 import base64
 import logging
 
@@ -125,20 +128,35 @@ def vote(request, pemilihan_id):
 
     if request.method == 'POST':
         kandidat_id = request.POST.get('kandidat_id')
-        signature = request.headers.get('X-Vote-Signature')
-        if not kandidat_id or not signature:
+        signature_b64 = request.headers.get('X-Vote-Signature')
+        if not kandidat_id or not signature_b64:
             logger.error('Kandidat ID atau tanda tangan tidak ada')
             return JsonResponse({'status': 'error', 'message': 'Kandidat ID atau tanda tangan tidak ada'}, status=400)
 
         kandidat = get_object_or_404(Kandidat, id=kandidat_id, pemilihan=pemilihan)
+        logger.debug(f"Memproses permintaan voting untuk pemilihan ID: {pemilihan_id}")
+    
+        # Tambahkan pernyataan logging untuk data penting
+        logger.debug(f"kandidat_id: {request.POST.get('kandidat_id')}")
+        logger.debug(f"X-Vote-Signature: {request.headers.get('X-Vote-Signature')}")
 
         try:
-            public_key = load_public_key(pemilih)
+            # Verifikasi tanda tangan DSA
+            public_key_dsa = load_dsa_public_key(pemilih.id)
+            message = f"vote-{kandidat_id}-{pemilihan_id}"
+            signature = base64.b64decode(signature_b64)
+            if not public_key_dsa.verify(signature, message.encode('utf-8'), hashes.SHA256()):
+                logger.error('Tanda tangan tidak valid')
+                return JsonResponse({'status': 'error', 'message': 'Tanda tangan tidak valid'}, status=400)
+
+            # Menggunakan RSA untuk enkripsi nama kandidat
+            public_key_rsa = load_public_key(pemilih)
             encrypted_nama_pemilih = pemilih.nama
-            encrypted_nama_kandidat = encrypt_with_public_key(public_key, kandidat.nama)
+            encrypted_nama_kandidat = encrypt_with_public_key(public_key_rsa, kandidat.nama)
             encrypted_judul_pemilihan = pemilihan.judul
             waktu_voting = datetime.now()
 
+            # Simpan suara
             voting = Voting(
                 nama_pemilih=encrypted_nama_pemilih,
                 nama_kandidat=encrypted_nama_kandidat,
@@ -148,14 +166,6 @@ def vote(request, pemilihan_id):
             voting.save()
 
             request.session['has_voted'] = True
-
-            private_key = pemilih.get_private_key()
-            message = f"{pemilih.nama}-{kandidat.nama}-{pemilihan.judul}-{str(waktu_voting)}"
-            signature = private_key.sign(
-                message.encode('utf-8'), hashes.SHA1()
-            )
-            signature_b64 = base64.b64encode(signature).decode('utf-8')
-
             request.session['vote_signature'] = signature_b64
 
             response = JsonResponse({'status': 'success', 'message': 'Voting berhasil'})
@@ -163,12 +173,16 @@ def vote(request, pemilihan_id):
             logger.info('Tanda tangan DSA berhasil ditambahkan ke header')
 
             return response
+        except InvalidSignature as e:
+            logger.error(f'Error saat memverifikasi tanda tangan: {str(e)}')
+            return JsonResponse({'status': 'error', 'message': 'Tanda tangan tidak valid'}, status=400)
         except Exception as e:
             logger.error(f'Error saat menyimpan vote: {str(e)}')
             return JsonResponse({'status': 'error', 'message': 'Error saving vote'}, status=500)
     else:
         logger.error('Invalid request method')
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
+
 def hasil_pemilihan(request, pemilihan_id):
     pemilihan = get_object_or_404(Pemilihan, id=pemilihan_id)
     votings = Voting.objects.filter(judul_pemilihan=pemilihan.judul)

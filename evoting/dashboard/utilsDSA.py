@@ -1,8 +1,11 @@
+# utilsDSA.py
+
 from cryptography.hazmat.primitives.asymmetric import dsa
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric.utils import Prehashed
 from cryptography.hazmat.primitives import serialization
-import base64, os
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import padding
+from cryptography.exceptions import InvalidSignature
+import base64
 
 def generate_dsa_keys(pemilih_id):
     private_key = dsa.generate_private_key(key_size=2048)
