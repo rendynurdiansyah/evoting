@@ -24,7 +24,7 @@ from datetime import datetime
 from cryptography.hazmat.primitives import serialization
 import base64
 import logging
-
+import json
 
 
 # Konfigurasi logger
@@ -199,47 +199,6 @@ def vote(request, pemilihan_id):
         logger.error('Invalid request method')
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
 
-
-def hasil_voting(request, pemilihan_id):
-    pemilihan = get_object_or_404(Pemilihan, id=pemilihan_id)
-    votings = Voting.objects.filter(judul_pemilihan=pemilihan.judul)
-    
-    pemilih_id = request.session.get('pemilih_id')
-    if not pemilih_id:
-        return render(request, 'front/error.html', {'message': 'Pemilih ID tidak ditemukan dalam sesi'}, status=400)
-    
-    pemilih = get_object_or_404(Pemilih, id=pemilih_id)
-    public_key = load_public_key(pemilih)
-    
-    decrypted_votes = []
-    vote_counts = {}
-    for vote in votings:
-        try:
-            decrypted_nama_kandidat = decrypt_with_public_key(public_key, vote.nama_kandidat)
-            decrypted_votes.append({
-                'nama_pemilih': vote.nama_pemilih,
-                'nama_kandidat': decrypted_nama_kandidat,
-                'judul_pemilihan': vote.judul_pemilihan,
-                'waktu_voting': vote.waktu_voting,
-            })
-            if decrypted_nama_kandidat in vote_counts:
-                vote_counts[decrypted_nama_kandidat] += 1
-            else:
-                vote_counts[decrypted_nama_kandidat] = 1
-        except Exception as e:
-            print(f"Error decrypting vote: {e}")
-            continue
-    
-    form = VotingForm()
-    template_name = 'back/home/hasil_.html'
-    context = {
-        'title': pemilihan.judul,
-        'decrypted_votes': decrypted_votes,
-        'form': form,
-        'vote_counts': vote_counts,
-    }
-    return render(request, template_name, context)
-
     
 def voting_success(request):
         # Cek login
@@ -259,29 +218,52 @@ def daftar_pemilihan(request):
     
 
 
-# def statistik(request, pemilihan_id):
-#     pemilihan = get_object_or_404(Pemilihan, id=pemilihan_id)
-#     voting_results = Voting.objects.filter(pemilihan=pemilihan)
+def statistik(request, pemilihan_id):
+    pemilihan = get_object_or_404(Pemilihan, id=pemilihan_id)
+    voting_results = Voting.objects.filter(judul_pemilihan=pemilihan.judul)
     
-#     # Hitung informasi yang diperlukan
-#     jumlah_pemilih = Pemilih.objects.count()
-#     pemilih_terpilih = voting_results.count()  # Jumlah pemilih yang telah memilih
-#     jumlah_kandidat = pemilihan.kandidats.count()
+    # Calculate required information
+    jumlah_pemilih = Pemilih.objects.count()
+    pemilih_terpilih = voting_results.count()  # Number of voters who have voted
+    jumlah_kandidat = Kandidat.objects.filter(pemilihan=pemilihan).count()
     
-#     # Hitung total suara untuk setiap kandidat
-#     kandidats = pemilihan.kandidats.all()
-#     labels = [kandidat.nama for kandidat in kandidats]
-#     data = [voting_results.filter(kandidat=kandidat).count() for kandidat in kandidats]
-#     total_suara = sum(data)  # Total semua suara
-    
-#     return render(request, 'front/statistik.html', {
-#         'pemilihan': pemilihan,
-#         'jumlah_pemilih': jumlah_pemilih,
-#         'pemilih_terpilih': pemilih_terpilih,
-#         'jumlah_kandidat': jumlah_kandidat,
-#         'total_suara': total_suara,
-#         'labels': labels,
-#         'data': data,
-#     })
+    # Decrypt candidate names and count votes
+    vote_counts = {}
+    pemilihs = Pemilih.objects.all()
+    for vote in voting_results:
+        decrypted = False
+        for pemilih in pemilihs:
+            private_key_str = load_private_key(pemilih)
+            try:
+                decrypted_nama_kandidat = decrypt_with_private_key(private_key_str, vote.nama_kandidat)
+                decrypted_nama_kandidat = decrypted_nama_kandidat.strip()  # Ensure no leading/trailing spaces
+                if decrypted_nama_kandidat in vote_counts:
+                    vote_counts[decrypted_nama_kandidat] += 1
+                else:
+                    vote_counts[decrypted_nama_kandidat] = 1
+                decrypted = True
+                break
+            except Exception as e:
+                continue
+        if not decrypted:
+            print(f"Error decrypting vote for vote ID {vote.id}")
+
+    labels = list(vote_counts.keys())
+    data = list(vote_counts.values())
+    total_suara = sum(data)  # Total votes
+
+    # Convert to JSON strings
+    labels_json = json.dumps(labels)
+    data_json = json.dumps(data)
+
+    return render(request, 'front/statistik.html', {
+        'pemilihan': pemilihan,
+        'jumlah_pemilih': jumlah_pemilih,
+        'pemilih_terpilih': pemilih_terpilih,
+        'jumlah_kandidat': jumlah_kandidat,
+        'total_suara': total_suara,
+        'labels': labels_json,  # Pass JSON string
+        'data': data_json,  # Pass JSON string
+    })
 
 

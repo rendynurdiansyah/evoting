@@ -1,90 +1,188 @@
+{% extends "front/base.html" %}
+{% block title %}Hasil Statistik{% endblock title %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Statistik Voting</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            background: #fff;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-        .info p {
-            margin: 0;
-            font-size: 1.1em;
-        }
-        #chartContainer {
-            margin-top: 30px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1 class="text-center">Statistik Voting</h1>
-        <div class="info row">
-            <div class="col-md-3"><p>Total Pemilih: <strong>{{ jumlah_pemilih }}</strong></p></div>
-            <div class="col-md-3"><p>Sudah Memilih: <strong>{{ pemilih_terpilih }}</strong></p></div>
-            <div class="col-md-3"><p>Jumlah Kandidat: <strong>{{ jumlah_kandidat }}</strong></p></div>
-            <div class="col-md-3"><p>Total Suara: <strong>{{ total_suara }}</strong></p></div>
-        </div>
-        <div id="chartContainer" class="mt-4">
-            <canvas id="myChart"></canvas>
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+        <div class="card shadow-lg border-0 rounded">
+            <div class="card-header card-header-primary text-center">
+                <h4 class="card-title">Statistik Pemilihan</h4>
+                <p class="card-category">E-Voting Organisasi Inter Universitas Muhammadiyah Kalimantan Timur</p>
+            </div>
+            <div class="card-body">
+                <center><h3 class="text-primary">{{ pemilihan.judul }}</h3></center>
+                <div class="stats my-4">
+                    <p><strong>Jumlah Pemilih:</strong> {{ jumlah_pemilih }}</p>
+                    <p><strong>Pemilih Terpilih:</strong> {{ pemilih_terpilih }}</p>
+                    <p><strong>Jumlah Kandidat:</strong> {{ jumlah_kandidat }}</p>
+                    <p><strong>Total Suara:</strong> {{ total_suara }}</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="myChart"></canvas>
+                </div>
+            </div>
         </div>
     </div>
+</div>
+{% endblock content %}
 
-    <script>
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
         const ctx = document.getElementById('myChart').getContext('2d');
-        const data = {
-            labels: {{ labels|safe }},
+
+        // Data chart dari Django context
+        const labels = JSON.parse('{{ labels|escapejs }}');
+        const data = JSON.parse('{{ data|escapejs }}');
+
+        const chartData = {
+            labels: labels,
             datasets: [{
-                label: 'Votes',
-                data: {{ data|safe }},
-                backgroundColor: 'rgba(75, 192, 192, 0.2)', // Transparent background
-                borderColor: 'rgba(75, 192, 192, 1)',
+                label: 'Suara',
+                data: data,
+                backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                borderColor: 'rgba(54, 162, 235, 1)',
                 borderWidth: 1
             }]
         };
+
         const options = {
-            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
             scales: {
                 x: {
                     beginAtZero: true,
+                    ticks: {
+                        color: '#333',
+                        font: {
+                            size: 14
+                        }
+                    },
                     grid: {
-                        display: false
+                        color: 'rgba(0, 0, 0, 0.1)'
                     }
                 },
                 y: {
+                    ticks: {
+                        color: '#333',
+                        font: {
+                            size: 14
+                        }
+                    },
                     grid: {
-                        display: false
+                        color: 'rgba(0, 0, 0, 0.1)'
                     }
                 }
             },
             plugins: {
                 legend: {
                     display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleFont: {
+                        size: 16,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 14
+                    }
                 }
+            },
+            animation: {
+                duration: 1000,
+                easing: 'easeInOutBounce'
             }
         };
+
         const myChart = new Chart(ctx, {
             type: 'bar',
-            data: data,
+            data: chartData,
             options: options
         });
-    </script>
-</body>
-</html>
+    });
+</script>
+<style>
+    .stats p {
+        font-size: 1.2em;
+        margin: 0.5em 0;
+        color: #555;
+    }
+
+    .chart-container {
+        width: 100%;
+        max-width: 800px;
+        margin: 2em auto;
+        position: relative;
+        height: 400px;
+    }
+
+    .card {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header-primary {
+        background: linear-gradient(to right, #4caf50, #388e3c);
+        color: white;
+        padding: 1.5em 0;
+    }
+
+    .card-title {
+        margin: 0;
+        font-weight: bold;
+    }
+
+    .card-category {
+        margin-top: 5px;
+        font-size: 1em;
+    }
+
+    .card-body {
+        padding: 2em;
+    }
+
+    .text-primary {
+        color: #388e3c;
+        font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 1em;
+        }
+
+        .card-header-primary {
+            padding: 1em 0;
+        }
+
+        .stats p {
+            font-size: 1em;
+        }
+
+        .chart-container {
+            height: 300px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .card-body {
+            padding: 0.5em;
+        }
+
+        .card-header-primary {
+            padding: 0.5em 0;
+        }
+
+        .stats p {
+            font-size: 0.9em;
+        }
+
+        .chart-container {
+            height: 250px;
+        }
+    }
+</style>
+{% endblock extra_js %}
