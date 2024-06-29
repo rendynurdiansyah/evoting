@@ -38,7 +38,7 @@
                                     {% if pemilihan.is_election_closed == 0 %}
                                         <button class="btn btn-bg-primary" onclick="showAlert()">Lihat Statistik</button>
                                     {% else %}
-                                        <a href="#" type="button" class="btn btn-primary">Lihat Statistik</a>
+                                        <a href="{% url "hasil_voting" pemilihan.id %}" type="button" class="btn btn-primary">Lihat Statistik</a>
                                     {% endif %}
                                 </td>
                             </tr>

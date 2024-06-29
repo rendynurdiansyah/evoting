@@ -33,5 +33,6 @@ urlpatterns = [
     path('kandidat/delete/<int:kandidat_id>/', deleteKandidat, name='deleteKandidat'),
 
     path('laporan_statistik/',laporan_statistik , name='laporan_statistik'),
+    path('statistik/<int:pemilihan_id>/',hasil_voting , name='hasil_voting'),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

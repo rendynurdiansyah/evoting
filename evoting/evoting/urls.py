@@ -17,7 +17,7 @@ urlpatterns = [
     path('', home, name='home'),
     path('voting/', voting, name='voting'),
     path('daftar/pemilihan/', daftar_pemilihan, name='daftar_pemilihan'),
-    path('statistik/<int:pemilihan_id>/', statistik, name='statistik'),
+    # path('statistik/<int:pemilihan_id>/', statistik, name='statistik'),
 
     path("", include('dashboard.urls')),  
     path("", include('accounts.urls')),  

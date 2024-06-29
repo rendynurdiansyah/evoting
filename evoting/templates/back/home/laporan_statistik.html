@@ -26,21 +26,22 @@
 
     <script>
         const ctx = document.getElementById('myChart').getContext('2d');
-        const data = {
-            labels: [
-                'KUSWANTINI', 'RUSMIYATI', 'FARIDA', 'SUYATMI', 'SITI MUNAWAROH', 
-                'NORHERAWATI', 'SITI RHUKAYAH', 'GALUH PRATIWI', 'SUHRIA', 'IRMAWATI', 
-                'SARMILA', 'AGUSTIAH', 'NIRWANA', 'SUHARNI SIMULANG', 'HJ HASMIAH', 
-                'KUSMIYATI'
-            ],
+
+        // Get labels and data from Django context
+        const labels = {{ labels|safe }};
+        const data = {{ data|safe }};
+
+        const chartData = {
+            labels: labels,
             datasets: [{
                 label: 'Votes',
-                data: [17, 16, 15, 15, 13, 12, 11, 10, 10, 9, 9, 7, 5, 5, 2, 2],
+                data: data,
                 backgroundColor: '#4caf50',
                 borderColor: '#388e3c',
                 borderWidth: 1
             }]
         };
+
         const options = {
             indexAxis: 'y',
             scales: {
@@ -49,11 +50,13 @@
                 }
             }
         };
+
         const myChart = new Chart(ctx, {
             type: 'bar',
-            data: data,
+            data: chartData,
             options: options
         });
     </script>
 </body>
+{% endblock %}
 </html>
