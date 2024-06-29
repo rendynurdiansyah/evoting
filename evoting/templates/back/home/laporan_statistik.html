@@ -11,10 +11,16 @@
             </div>
             <div class="card-body">
                 <center><h3>{{ pemilihan }}</h3></center>
-                <p>Jumlah Pemilih:{{ jumlah_pemilih }}</p>
-                <p>Pemilih Terpilih:{{ pemilih_terpilih }}</p>
-                <p>Jumlah Kandidat:{{ jumlah_kandidat }}</p>
-                <p>Total Suarat:{{ total_suara }}</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Jumlah Pemilih :</strong> <strong>{{ jumlah_pemilih }}</strong></p>
+                        <p><strong>Pemilih Terpilih :</strong> <strong>{{ pemilih_terpilih }}</strong></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Jumlah Kandidat :</strong> <strong>{{ jumlah_kandidat }}</strong></p>
+                        <p><strong>Total Suara :</strong> <strong>{{ total_suara }}</strong></p>
+                    </div>
+                </div>
                 <style>
                     #chartContainer {
                         width: 80%;
@@ -54,9 +60,16 @@
     };
 
     const options = {
+        maintainAspectRatio: false,
         indexAxis: 'y',
         scales: {
             x: {
+                grid: {
+                    display: false, // Menghilangkan grid pada sumbu x
+                },
+                beginAtZero: true
+            },
+            y: {
                 beginAtZero: true
             }
         }

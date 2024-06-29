@@ -1,3 +1,4 @@
+<!-- File: hasil_statistik.html -->
 {% extends "front/base.html" %}
 {% block title %}Hasil Statistik{% endblock title %}
 
@@ -5,25 +6,40 @@
 <div class="row justify-content-center">
     <div class="col-12 col-lg-10">
         <div class="card shadow-lg border-0 rounded">
-            <div class="card-header card-header-primary text-center">
+            <div class="card-header card-header text-center">
+                <br>
+                <br>
+                <br>
+                <br>
+                <h4 class="card-title">Hasil Statistik</h4>
+                <div class="card-category">
+                    <button class="btn btn-sm btn-info" onclick="window.print()">Cetak</button>
+                </div>
             </div>
             <div class="card-body">
                 <center><h3 class="text-primary">{{ pemilihan.judul }}</h3></center>
-                <div class="stats my-4">
-                    <p><strong>Jumlah Pemilih:</strong> {{ jumlah_pemilih }}</p>
-                    <p><strong>Pemilih Terpilih:</strong> {{ pemilih_terpilih }}</p>
-                    <p><strong>Jumlah Kandidat:</strong> {{ jumlah_kandidat }}</p>
-                    <p><strong>Total Suara:</strong> {{ total_suara }}</p>
+                <div class="stats my-4 text-center">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Total Calon :</strong> <strong>{{ jumlah_kandidat }}</strong></p>
+                            <p><strong>Total Pemilih :</strong> <strong>{{ jumlah_pemilih }}</strong></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Sudah Memilih :</strong> <strong>{{ pemilih_terpilih }}</strong></p>
+                            <p><strong>Belum Memilih :</strong> <strong>{{ jumlah_pemilih|add:"-pemilih_terpilih" }}</strong></p>
+                        </div>
+                    </div>
                 </div>
+                
                 <div class="chart-container">
                     <canvas id="myChart"></canvas>
                 </div>
+                
             </div>
         </div>
     </div>
 </div>
 {% endblock content %}
-
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
@@ -62,6 +78,7 @@
                     }
                 },
                 y: {
+                    display: false,  // Hide the y-axis
                     ticks: {
                         color: '#333',
                         font: {
@@ -106,6 +123,10 @@
         font-size: 1.2em;
         margin: 0.5em 0;
         color: #555;
+    }
+
+    .stats p strong {
+        font-size: 1.5em;
     }
 
     .chart-container {
@@ -184,3 +205,4 @@
     }
 </style>
 {% endblock extra_js %}
+

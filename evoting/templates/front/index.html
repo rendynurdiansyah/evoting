@@ -14,7 +14,7 @@
           <div class="banner-inner-wrapper header-text">
             <div class="main-caption">
               <h2>SELAMAT DATANG DI WEBSITE</h2>
-              <h1>E-Voting Muhammadiyah Kalimantar Timur</h1>
+              <h1>E-Voting Muhammadiyah Kalimantan Timur</h1>
               <div class="border-button"><a href="{% url "voting" %}">LAKUKAN VOTING</a></div>
             </div>
             <div class="container">
@@ -23,17 +23,16 @@
                   <div class="more-info">
                     <div class="row">
                       <div class="col-lg-4 col-sm-6 col-6">
-                        <i class="fa fa-clock"></i>
-                        <h4><span>200 Pemilih</span><br>Sudah Terdaftar</h4>
+                        <i class="fa fa-person"></i>
+                        <h4><span>{{ jumlah_pemilih }} Pemilih</span><br>Sudah Terdaftar</h4>
                       </div>
                       <div class="col-lg-4 col-sm-6 col-6">
-                        <i class="fa fa-mobile"></i>
-                        <h4><span>Ramah Seluler</span><br> perangkat apa saja</h4>
+                        <i class="fa fa-calendar"></i>
+                        <h4><span>{{ jumlah_pemilihan }} Pemilihan</span><br>Sudah Terlaksanakan</h4>
                       </div>
                       <div class="col-lg-4 col-sm-6 col-6">
-                        <div class="main-button">
-                          <a href="{% url "daftar_pemilihan" %}">Klik Untuk Lihat Pemilihan</a>
-                        </div>
+                        <i class="fa fa-check-circle"></i>
+                        <h4><span>{{ jumlah_suara }} Suara</span><br>Sudah Digunakan</h4>
                       </div>
                     </div>
                   </div>
@@ -47,7 +46,7 @@
             <div class="main-caption">
               <h2>SELAMAT DATANG DI WEBSITE</h2>
               <h1>E-Voting Muhammadiyah Kalimantar Timur</h1>
-              <div class="border-button"><a href="about.html">Pelajari Lebih Lanjut</a></div>
+              <div class="border-button"><a href="{% url "voting" %}">LAKUKAN VOTING</a></div>
             </div>
             <div class="container">
               <div class="row">
@@ -55,17 +54,16 @@
                   <div class="more-info">
                     <div class="row">
                       <div class="col-lg-4 col-sm-6 col-6">
-                        <i class="fa fa-shield"></i>
-                        <h4><span>Enkripsi</span><br>Data dienkripsi dengan aman</h4>
+                        <i class="fa fa-person"></i>
+                        <h4><span>{{ jumlah_pemilih }} Pemilih</span><br>Sudah Terdaftar</h4>
                       </div>
                       <div class="col-lg-4 col-sm-6 col-6">
-                        <i class="fa fa-fingerprint"></i>
-                        <h4><span>Otentikasi</span><br>Otentikasi multi-faktor</h4>
+                        <i class="fa fa-calendar"></i>
+                        <h4><span>{{ jumlah_pemilihan }} Pemilihan</span><br>Sudah Terlaksanakan</h4>
                       </div>
                       <div class="col-lg-4 col-sm-6 col-6">
-                        <div class="main-button">
-                          <a href="about.html">Klik Untuk Voting</a>
-                        </div>
+                        <i class="fa fa-check-circle"></i>
+                        <h4><span>{{ jumlah_suara }} Suara</span><br>Sudah Digunakan</h4>
                       </div>
                     </div>
                   </div>
@@ -79,7 +77,7 @@
             <div class="main-caption">
               <h2>SELAMAT DATANG DI WEBSITE</h2>
               <h1>E-Voting Muhammadiyah Kalimantar Timur</h1>
-              <div class="border-button"><a href="about.html">Pelajari Lebih Lanjut</a></div>
+              <div class="border-button"><a href="{% url "voting" %}">LAKUKAN VOTING</a></div>
             </div>
             <div class="container">
               <div class="row">
@@ -87,17 +85,16 @@
                   <div class="more-info">
                     <div class="row">
                       <div class="col-lg-4 col-sm-6 col-6">
-                        <i class="fa fa-globe"></i>
-                        <h4><span>Inklusif</span><br>Aksesibel untuk semua pemilih</h4>
+                        <i class="fa fa-person"></i>
+                        <h4><span>{{ jumlah_pemilih }} Pemilih</span><br>Sudah Terdaftar</h4>
                       </div>
                       <div class="col-lg-4 col-sm-6 col-6">
-                        <i class="fa fa-braille"></i>
-                        <h4><span>Teknologi Bantu</span><br>Mendukung berbagai kebutuhan</h4>
+                        <i class="fa fa-calendar"></i>
+                        <h4><span>{{ jumlah_pemilihan }} Pemilihan</span><br>Sudah Terlaksanakan</h4>
                       </div>
                       <div class="col-lg-4 col-sm-6 col-6">
-                        <div class="main-button">
-                          <a href="about.html">Klik Untuk Voting</a>
-                        </div>
+                        <i class="fa fa-check-circle"></i>
+                        <h4><span>{{ jumlah_suara }} Suara</span><br>Sudah Digunakan</h4>
                       </div>
                     </div>
                   </div>
@@ -111,7 +108,7 @@
             <div class="main-caption">
               <h2>SELAMAT DATANG DI WEBSITE</h2>
               <h1>E-Voting Muhammadiyah Kalimantar Timur</h1>
-              <div class="border-button"><a href="about.html">Pelajari Lebih Lanjut</a></div>
+              <div class="border-button"><a href="{% url "voting" %}">LAKUKAN VOTING</a></div>
             </div>
             <div class="container">
               <div class="row">
@@ -119,17 +116,16 @@
                   <div class="more-info">
                     <div class="row">
                       <div class="col-lg-4 col-sm-6 col-6">
-                        <i class="fa fa-chart-line"></i>
-                        <h4><span>Hasil Cepat</span><br>Perhitungan suara instan</h4>
+                        <i class="fa fa-person"></i>
+                        <h4><span>{{ jumlah_pemilih }} Pemilih</span><br>Sudah Terdaftar</h4>
                       </div>
                       <div class="col-lg-4 col-sm-6 col-6">
-                        <i class="fa fa-dollar-sign"></i>
-                        <h4><span>Efektif Biaya</span><br>Mengurangi biaya pemilihan</h4>
+                        <i class="fa fa-calendar"></i>
+                        <h4><span>{{ jumlah_pemilihan }} Pemilihan</span><br>Sudah Terlaksanakan</h4>
                       </div>
                       <div class="col-lg-4 col-sm-6 col-6">
-                        <div class="main-button">
-                          <a href="about.html">Klik Untuk Voting</a>
-                        </div>
+                        <i class="fa fa-check-circle"></i>
+                        <h4><span>{{ jumlah_suara }} Suara</span><br>Sudah Digunakan</h4>
                       </div>
                     </div>
                   </div>

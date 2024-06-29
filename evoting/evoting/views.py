@@ -44,6 +44,9 @@ def home(request):
     context = {
         'title':'my home',
         'welcome':'welcome my home',
+        'jumlah_pemilih':jumlah_pemilih,
+        'jumlah_pemilihan':jumlah_pemilihan,
+        'jumlah_suara':jumlah_suara,
     }
     return render(request, template_name, context)
 
