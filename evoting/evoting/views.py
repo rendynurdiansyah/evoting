@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect,get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django import template
+from django.contrib import messages
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
 from django.template import TemplateDoesNotExist
@@ -33,7 +34,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 
 
 def home(request):
-        # Cek login
+    # Cek login
     if not request.session.get('pemilih_id'):
         return redirect('pemilih_login')
 
@@ -59,13 +60,12 @@ def voting(request):
 def validate_token(request):
     if request.method == "POST":
         token_input = request.POST.get('token')
-        pemilihan = get_object_or_404(Pemilihan, token=token_input)
-        if pemilihan:
-            # Redirect to the voting page with the valid pemilihan id
+        try:
+            pemilihan = Pemilihan.objects.get(token=token_input)
             return redirect('pemilihanvote', pemilihan_id=pemilihan.id)
-        else:
-            # Token is invalid or does not exist
-            return HttpResponse("Invalid token", status=400)
+        except Pemilihan.DoesNotExist:
+            messages.error(request, "Token yang Anda masukkan salah.")
+            return redirect('voting')  # Pastikan 'voting_page' adalah URL name untuk halaman input token
     return HttpResponse(status=405)
 
 def pemilihanvote(request, pemilihan_id):
@@ -96,19 +96,19 @@ def pengambilanSuara(request, pemilihan_id):
     kandidats = Kandidat.objects.filter(pemilihan=pemilihan)
     return render(request, 'front/pengambilanSuara.html', {'pemilihan': pemilihan,'kandidats': kandidats})
 
-def get_private_key(request, pemilih_id):
+def load_dsa_private_key(request, pemilih_id):
     try:
-        pemilih = get_object_or_404(Pemilih, id=pemilih_id)
-        
-        # Pastikan hanya pemilih yang bersangkutan yang bisa mengakses kunci privatnya
-        if request.user.id != pemilih.id:
-            return JsonResponse({'error': 'Akses ditolak'}, status=403)
-
-        return JsonResponse({'private_key': pemilih.kunci_privat})
+        pemilih = Pemilih.objects.get(id=pemilih_id)
+        private_key_dsa = pemilih.public_key  # Assuming this is how you store DSA private key in your model
+        return JsonResponse({'private_key_dsa': private_key_dsa})
     except Pemilih.DoesNotExist:
-        return JsonResponse({'error': 'Pemilih tidak ditemukan'}, status=404)
-@csrf_exempt
+        return HttpResponseNotFound('Pemilih not found') 
 
+def get_private_key(request, pemilih_id):
+    pemilih = Pemilih.objects.get(id=pemilih_id)
+    return HttpResponse(pemilih.private_key, content_type='text/plain')
+
+@csrf_exempt
 def pemilihan_view(request, pemilihan_id):
     pemilihan = get_object_or_404(Pemilihan, id=pemilihan_id)
     kandidats = Kandidat.objects.filter(pemilihan=pemilihan)
@@ -141,6 +141,10 @@ def vote(request, pemilihan_id):
 
     pemilih = get_object_or_404(Pemilih, id=pemilih_id)
 
+    # private_key_rsa = load_rsa_private_key(pemilih_id)
+    # dekrip_nama_pemilih = decrypt_with_private_key(private_key_rsa.export_key(), pemilih.nama)
+    # dekrip_nama_pemilihan = decrypt_with_private_key(private_key_rsa.export_key(), pemilihan.judul)
+
     voting = Voting.objects.filter(judul_pemilihan=pemilihan.judul, nama_pemilih=pemilih.nama).first()
 
     if voting:
@@ -163,16 +167,16 @@ def vote(request, pemilihan_id):
 
         try:
             # Verifikasi tanda tangan DSA
-            public_key_dsa = load_dsa_public_key(pemilih_id)
+            public_key_dsa = load_dsa_public_key(pemilih.public_key)
             message = f"vote-{kandidat_id}-{pemilihan_id}"
             signature = base64.b64decode(signature_b64)
             public_key_dsa.verify(signature, message.encode('utf-8'), hashes.SHA1())
 
             # Menggunakan RSA untuk enkripsi nama kandidat
-            public_key_rsa = load_public_key(pemilih)
-            encrypted_nama_pemilih =  pemilih.nama
-            encrypted_nama_kandidat = encrypt_with_public_key(public_key_rsa, kandidat.nama)
-            encrypted_judul_pemilihan =  pemilihan.judul
+            public_key_rsa = load_rsa_public_key(pemilih_id)
+            encrypted_nama_pemilih = pemilih.nama
+            encrypted_nama_kandidat = encrypt_with_public_key(public_key_rsa.export_key(), kandidat.nama)
+            encrypted_judul_pemilihan = pemilihan.judul
             waktu_voting = datetime.now()
 
             # Simpan suara
@@ -214,11 +218,13 @@ def voting_already_used(request):
 
 def daftar_pemilihan(request):
     pemilihans = Pemilihan.objects.all()
+    for pemilihan in pemilihans:
+        pemilihan.jumlah_kandidat = Kandidat.objects.filter(pemilihan=pemilihan).count()
+        pemilihan.jumlah_pemilih = DaftarPemilihTerpilih.objects.filter(pemilihan=pemilihan).count()
     context = {
         'pemilihans': pemilihans,
     }
     return render(request, 'front/daftar_pemilihan.html', context)
-    
 
 
 def statistik(request, pemilihan_id):
@@ -232,13 +238,14 @@ def statistik(request, pemilihan_id):
     
     # Decrypt candidate names and count votes
     vote_counts = {}
-    pemilihs = Pemilih.objects.all()
+    pemilih_ids = Pemilih.objects.values_list('id', flat=True)  # Get all pemilih ids
+    
     for vote in voting_results:
         decrypted = False
-        for pemilih in pemilihs:
-            private_key_str = load_private_key(pemilih)
+        for pemilih_id in pemilih_ids:
+            private_key_rsa = load_rsa_private_key(pemilih_id)
             try:
-                decrypted_nama_kandidat = decrypt_with_private_key(private_key_str, vote.nama_kandidat)
+                decrypted_nama_kandidat = decrypt_with_private_key(private_key_rsa, vote.nama_kandidat)
                 decrypted_nama_kandidat = decrypted_nama_kandidat.strip()  # Ensure no leading/trailing spaces
                 if decrypted_nama_kandidat in vote_counts:
                     vote_counts[decrypted_nama_kandidat] += 1
@@ -247,9 +254,11 @@ def statistik(request, pemilihan_id):
                 decrypted = True
                 break
             except Exception as e:
+                logger.error(f"Error decrypting vote for vote ID {vote.id}: {str(e)}")
                 continue
         if not decrypted:
-            print(f"Error decrypting vote for vote ID {vote.id}")
+            logger.error(f"Error decrypting vote for vote ID {vote.id}: Unable to decrypt")
+            # Handle error condition here, e.g., log, return error response, etc.
 
     labels = list(vote_counts.keys())
     data = list(vote_counts.values())
@@ -268,5 +277,3 @@ def statistik(request, pemilihan_id):
         'labels': labels_json,  # Pass JSON string
         'data': data_json,  # Pass JSON string
     })
-
-

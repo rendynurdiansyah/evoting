@@ -26,7 +26,7 @@ class Pemilihan(models.Model):
 
 class Pemilih(models.Model):
     nama = models.TextField( blank=True, null=True)
-    nim = models.TextField( blank=True, null=True)
+    nim = models.TextField( blank=True, null=True,unique=True)
     prodi = models.TextField(blank=True, null=True)
     org_hima = models.TextField(blank=True, null=True)
     org_ukm = models.TextField(blank=True, null=True)

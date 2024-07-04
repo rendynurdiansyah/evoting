@@ -11,10 +11,18 @@ import json
 # Create your views here.
 @login_required
 def dashboard(request):
+    jumlah_pemilih = Pemilih.objects.count()
+    jumlah_pemilihan = Pemilihan.objects.count()
+    jumlah_suara = Voting.objects.count()
+    jumlah_kandidat = Kandidat.objects.count()
     template_name = 'back/home/index.html'
     context = {
         'title':'my home',
         'welcome':'welcome my home',
+        'jumlah_pemilih':jumlah_pemilih,
+        'jumlah_pemilihan':jumlah_pemilihan,
+        'jumlah_suara':jumlah_suara,
+        'jumlah_kandidat':jumlah_kandidat,
     }
     return render(request, template_name, context)
 
@@ -33,31 +41,36 @@ def createPemilih(request):
     if request.method == 'POST':
         form = PemilihForm(request.POST)
         if form.is_valid():
-            # Generate RSA key
-            public_key, private_key = generate_keys()
+            # Generate DSA keys
+            private_key, public_key = generate_dsa_keys()
+            
             # Save the form but do not commit to the database yet
             pemilih = form.save(commit=False)
-            pemilih.public_key = public_key
             pemilih.private_key = private_key
+            pemilih.public_key = public_key
+            
             # Now save the pemilih object to the database
             pemilih.save()
 
-            # Generate DSA key
-            generate_dsa_keys(pemilih.id)
+            # Optionally, generate RSA key as mentioned in your previous code
+            generate_rsa_keys(pemilih.id)
 
-            return redirect('pemilih')  # Ganti 'pemilih' dengan nama URL yang sesuai
+            return redirect('pemilih')  # Replace 'pemilih' with the appropriate URL name
     else:
         form = PemilihForm()
+    
     return render(request, 'back/home/pemilih.html', {'form': form})
 
 def editPemilih(request, pemilih_id):
     pemilih = get_object_or_404(Pemilih, pk=pemilih_id)
     if request.method == 'POST':
+        print("Data POST diterima:", request.POST)
         form = PemilihForm(request.POST, instance=pemilih)
         if form.is_valid():
             form.save()
             return redirect('pemilih')  # Redirect ke halaman daftar pemilih setelah berhasil menyimpan
         else:
+            print("Form tidak valid:", form.errors)
             return render(request, 'back/home/pemilih.html', {'edit_form': form, 'edit_errors': form.errors, 'edit_pemilih_id': pemilih_id})
     else:
         form = PemilihForm(instance=pemilih)
@@ -253,13 +266,14 @@ def hasil_voting(request, pemilihan_id):
     
     # Decrypt candidate names and count votes
     vote_counts = {}
-    pemilihs = Pemilih.objects.all()
+    pemilih_ids = Pemilih.objects.values_list('id', flat=True)  # Get all pemilih ids
+    
     for vote in voting_results:
         decrypted = False
-        for pemilih in pemilihs:
-            private_key_str = load_private_key(pemilih)
+        for pemilih_id in pemilih_ids:
+            private_key_rsa = load_rsa_private_key(pemilih_id)
             try:
-                decrypted_nama_kandidat = decrypt_with_private_key(private_key_str, vote.nama_kandidat)
+                decrypted_nama_kandidat = decrypt_with_private_key(private_key_rsa, vote.nama_kandidat)
                 decrypted_nama_kandidat = decrypted_nama_kandidat.strip()  # Ensure no leading/trailing spaces
                 if decrypted_nama_kandidat in vote_counts:
                     vote_counts[decrypted_nama_kandidat] += 1
@@ -268,9 +282,11 @@ def hasil_voting(request, pemilihan_id):
                 decrypted = True
                 break
             except Exception as e:
+                logger.error(f"Error decrypting vote for vote ID {vote.id}: {str(e)}")
                 continue
         if not decrypted:
-            print(f"Error decrypting vote for vote ID {vote.id}")
+            logger.error(f"Error decrypting vote for vote ID {vote.id}: Unable to decrypt")
+            # Handle error condition here, e.g., log, return error response, etc.
 
     labels = list(vote_counts.keys())
     data = list(vote_counts.values())
@@ -280,7 +296,7 @@ def hasil_voting(request, pemilihan_id):
     labels_json = json.dumps(labels)
     data_json = json.dumps(data)
 
-    return render(request, 'back/home/laporan_statistik.html', {
+    return render(request, 'front/statistik.html', {
         'pemilihan': pemilihan,
         'jumlah_pemilih': jumlah_pemilih,
         'pemilih_terpilih': pemilih_terpilih,

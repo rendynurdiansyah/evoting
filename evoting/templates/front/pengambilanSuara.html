@@ -28,7 +28,10 @@
                 <button type="button" class="btn btn-success my-2" data-bs-toggle="modal" data-bs-target="#voteModal{{ kandidat.id }}">
                   Vote
                 </button>
-
+                <button type="button" class="btn btn-info my-2" data-bs-toggle="modal" data-bs-target="#detailModal{{ kandidat.id }}">
+                  Detail
+                </button>
+                <!-- vote modal -->
                 <div class="modal fade" id="voteModal{{ kandidat.id }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="voteModalLabel{{ kandidat.id }}" aria-hidden="true">
                   <div class="modal-dialog">
                     <div class="modal-content">
@@ -50,6 +53,35 @@
                     </div>
                   </div>
                 </div>
+                <!-- end vote modal -->
+                <!-- Detail Modal -->
+              <div class="modal fade" id="detailModal{{ kandidat.id }}" tabindex="-1" aria-labelledby="detailModalLabel{{ kandidat.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="detailModalLabel{{ kandidat.id }}">Detail Kandidat: {{ kandidat.nama }}</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="row">
+                        <div class="col-md-5">
+                          <img src="{{ kandidat.foto.url }}" class="img-fluid rounded" alt="{{ kandidat.nama }}">
+                        </div>
+                        <div class="col-md-7">
+                          <h5>{{ kandidat.nama }}</h5>
+                          <p><strong>Dekripsi:</strong> {{ kandidat.deskripsi }}</p>
+                          <p><strong>Visi dan Misi:</strong> {{ kandidat.visi_misi }}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- END Detail Modal -->
+
               </div>
             </div>
           </div>
@@ -61,39 +93,34 @@
 </div>
 {% endblock content %}
 
+
 {% block extra_js %}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/10.5.27/jsrsasign-all-min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/10.5.27/jsrsasign-all-min.js"></script>
 <script>
   $(document).ready(function() {
     async function loadAndSignData(pemilihId, kandidatId, pemilihanId) {
       try {
-        const response = await fetch(`/static/keys/private_key_${pemilihId}.pem`);
+        const response = await fetch(`/get-private-key/${pemilihId}/`);
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(`Failed to fetch private key. Status: ${response.status}`);
         }
         const privateKeyPEM = await response.text();
-        console.log("Private Key PEM loaded:", privateKeyPEM.substr(0, 20) + "..."); // Log sebagian kecil dari PEM untuk debugging
+        console.log("Private Key PEM loaded:", privateKeyPEM.substr(0, 20) + "...");
 
-        // Mendekode kunci PEM ke objek kunci JSRSASign
         const privateKey = KEYUTIL.getKey(privateKeyPEM);
 
-        // Membuat pesan yang akan ditandatangani
         const message = `vote-${kandidatId}-${pemilihanId}`;
 
-        // Melakukan penandatanganan menggunakan kunci pribadi
         const sig = new KJUR.crypto.Signature({"alg": "SHA1withDSA"});
         sig.init(privateKey);
         sig.updateString(message);
         const signatureHex = sig.sign();
 
-        // Mengubah hasil penandatanganan ke base64 untuk dikirimkan dalam permintaan
         const signatureBase64 = hextob64(signatureHex);
 
-        // Kirim permintaan AJAX untuk melakukan voting
         $.ajax({
-          url: "{% url "vote" pemilihan.id %}",
+          url: "{% url 'vote' pemilihan.id %}",
           type: 'POST',
           headers: {
             'X-Vote-Signature': signatureBase64,
@@ -126,9 +153,7 @@
             Swal.fire({
               icon: 'error',
               title: 'Oops...',
-              text: 'Suara Anda Sudah Digunakan.'
-            }).then(function() {
-              window.location.href = '{% url "pemilih_logout" %}';
+              text: 'Gagal melakukan voting. Silakan coba lagi.',
             });
           }
         });
@@ -137,7 +162,7 @@
         Swal.fire({
           icon: 'error',
           title: 'Oops...',
-          text: 'Gagal memuat atau menandatangani data. Silakan coba lagi.'
+          text: 'Gagal memuat atau menandatangani data. Silakan coba lagi.',
         });
       }
     }
@@ -156,7 +181,7 @@
         Swal.fire({
           icon: 'error',
           title: 'Oops...',
-          text: 'Pemilih ID tidak ditemukan. Silakan coba lagi.'
+          text: 'Pemilih ID tidak ditemukan. Silakan coba lagi.',
         });
         return;
       }
@@ -165,8 +190,6 @@
     });
   });
 </script>
-
-
 {% endblock extra_js %}
 
 <style>

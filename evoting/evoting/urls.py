@@ -31,8 +31,9 @@ urlpatterns = [
     path('sorry/', sorry, name='sorry'),
     path('pemilihan/<int:pemilihan_id>/', pemilihan_view, name='pemilihan_view'),
     path('pemilihan/statistik/<int:pemilihan_id>/', statistik, name='statistik'),
+    path('get-private-key/<int:pemilih_id>/', get_private_key, name='get_private_key'),
 
-    path('keys/private_key_<int:pemilih_id>.pem', get_private_key, name='get_private_key'),
+    path('load_dsa_private_key/<int:pemilih_id>/', load_dsa_private_key, name='load_dsa_private_key'),
 
     
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

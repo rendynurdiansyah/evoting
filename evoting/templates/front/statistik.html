@@ -1,208 +1,87 @@
-<!-- File: hasil_statistik.html -->
 {% extends "front/base.html" %}
-{% block title %}Hasil Statistik{% endblock title %}
+{% block title %}Hasil Statistik{% endblock %} 
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-12 col-lg-10">
-        <div class="card shadow-lg border-0 rounded">
-            <div class="card-header card-header text-center">
-                <br>
-                <br>
-                <br>
-                <br>
-                <h4 class="card-title">Hasil Statistik</h4>
-                <div class="card-category">
-                    <button class="btn btn-sm btn-info" onclick="window.print()">Cetak</button>
-                </div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header card-header-primary">
+                <h4 class="card-title">Statistik Pemilihan</h4>
+                <p class="card-category">E-Voting Organisasi Inter Universitas Muhammadiyah Kalimantan Timur</p>
             </div>
             <div class="card-body">
-                <center><h3 class="text-primary">{{ pemilihan.judul }}</h3></center>
-                <div class="stats my-4 text-center">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>Total Calon :</strong> <strong>{{ jumlah_kandidat }}</strong></p>
-                            <p><strong>Total Pemilih :</strong> <strong>{{ jumlah_pemilih }}</strong></p>
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong>Sudah Memilih :</strong> <strong>{{ pemilih_terpilih }}</strong></p>
-                            <p><strong>Belum Memilih :</strong> <strong>{{ jumlah_pemilih|add:"-pemilih_terpilih" }}</strong></p>
-                        </div>
+                <center><h3>{{ pemilihan }}</h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Jumlah Pemilih :</strong> <strong>{{ jumlah_pemilih }}</strong></p>
+                        <p><strong>Pemilih Terpilih :</strong> <strong>{{ pemilih_terpilih }}</strong></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Jumlah Kandidat :</strong> <strong>{{ jumlah_kandidat }}</strong></p>
+                        <p><strong>Total Suara :</strong> <strong>{{ total_suara }}</strong></p>
                     </div>
                 </div>
-                
-                <div class="chart-container">
-                    <canvas id="myChart"></canvas>
-                </div>
-                
+                </center>
+                <style>
+                    #chartContainer {
+                        width: 80%;
+                        max-width: 800px;
+                    }
+                </style>
+                <center>
+                    <div id="chartContainer">
+                        <canvas id="myChart"></canvas>
+                    </div>
+                </center>
             </div>
         </div>
     </div>
 </div>
 {% endblock content %}
+
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const ctx = document.getElementById('myChart').getContext('2d');
+    const ctx = document.getElementById('myChart').getContext('2d');
 
-        // Data chart dari Django context
-        const labels = JSON.parse('{{ labels|escapejs }}');
-        const data = JSON.parse('{{ data|escapejs }}');
+    // Get labels and data from Django context
+    const labels = JSON.parse('{{ labels|escapejs }}');
+    const data = JSON.parse('{{ data|escapejs }}');
 
-        const chartData = {
-            labels: labels,
-            datasets: [{
-                label: 'Suara',
-                data: data,
-                backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }]
-        };
+    console.log('Labels:', labels);
+    console.log('Data:', data);
 
-        const options = {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    ticks: {
-                        color: '#333',
-                        font: {
-                            size: 14
-                        }
-                    },
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.1)'
-                    }
+    const chartData = {
+        labels: labels,
+        datasets: [{
+            label: 'Votes',
+            data: data,
+            backgroundColor: '#4caf50',
+            borderColor: '#388e3c',
+            borderWidth: 1
+        }]
+    };
+
+    const options = {
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        scales: {
+            x: {
+                grid: {
+                    display: false, // Menghilangkan grid pada sumbu x
                 },
-                y: {
-                    display: false,  // Hide the y-axis
-                    ticks: {
-                        color: '#333',
-                        font: {
-                            size: 14
-                        }
-                    },
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.1)'
-                    }
-                }
+                beginAtZero: true
             },
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    titleFont: {
-                        size: 16,
-                        weight: 'bold'
-                    },
-                    bodyFont: {
-                        size: 14
-                    }
-                }
-            },
-            animation: {
-                duration: 1000,
-                easing: 'easeInOutBounce'
+            y: {
+                beginAtZero: true
             }
-        };
+        }
+    };
 
-        const myChart = new Chart(ctx, {
-            type: 'bar',
-            data: chartData,
-            options: options
-        });
+    const myChart = new Chart(ctx, {
+        type: 'bar',
+        data: chartData,
+        options: options
     });
 </script>
-<style>
-    .stats p {
-        font-size: 1.2em;
-        margin: 0.5em 0;
-        color: #555;
-    }
-
-    .stats p strong {
-        font-size: 1.5em;
-    }
-
-    .chart-container {
-        width: 100%;
-        max-width: 800px;
-        margin: 2em auto;
-        position: relative;
-        height: 400px;
-    }
-
-    .card {
-        background-color: #fff;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .card-header-primary {
-        background: linear-gradient(to right, #4caf50, #388e3c);
-        color: white;
-        padding: 1.5em 0;
-    }
-
-    .card-title {
-        margin: 0;
-        font-weight: bold;
-    }
-
-    .card-category {
-        margin-top: 5px;
-        font-size: 1em;
-    }
-
-    .card-body {
-        padding: 2em;
-    }
-
-    .text-primary {
-        color: #388e3c;
-        font-weight: bold;
-    }
-
-    @media (max-width: 768px) {
-        .card-body {
-            padding: 1em;
-        }
-
-        .card-header-primary {
-            padding: 1em 0;
-        }
-
-        .stats p {
-            font-size: 1em;
-        }
-
-        .chart-container {
-            height: 300px;
-        }
-    }
-
-    @media (max-width: 576px) {
-        .card-body {
-            padding: 0.5em;
-        }
-
-        .card-header-primary {
-            padding: 0.5em 0;
-        }
-
-        .stats p {
-            font-size: 0.9em;
-        }
-
-        .chart-container {
-            height: 250px;
-        }
-    }
-</style>
 {% endblock extra_js %}
-

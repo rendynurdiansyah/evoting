@@ -1,6 +1,6 @@
 {% extends "back/layouts/base.html" %}
 
-{% block title %} UI Tables {% endblock %} 
+{% block title %}UI Tables{% endblock %}
 
 {% block content %}
 
@@ -8,8 +8,8 @@
     <div class="col-md-12">
         <div class="card">
             <div class="card-header card-header-primary">
-                <h4 class="card-title ">Daftar Pemilih</h4>
-                <p class="card-category">E-Voting Organisasi Inter Universitas Muhammadiyah Kalimantan Timur </p>
+                <h4 class="card-title">Daftar Pemilih</h4>
+                <p class="card-category">E-Voting Organisasi Inter Universitas Muhammadiyah Kalimantan Timur</p>
             </div>
             <div class="card-body">
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
@@ -40,18 +40,20 @@
                                         <input type="text" class="form-control" id="createProdi" name="prodi">
                                     </div>
                                     <div class="mb-3">
-                                      <label for="createOrgHima" class="form-label">Organisasi HIMA</label>
-                                      <select class="form-control" id="createOrgHima" name="org_hima">
-                                          <option value="HIMA A">HIMA A</option>
-                                          <option value="HIMA B">HIMA B</option>
-                                          <option value="HIMA C">HIMA C</option>
-                                          <!-- Tambahkan pilihan HIMA sesuai kebutuhan -->
-                                      </select>
-                                  </div>
-                                  <div class="mb-3">
-                                    <label for="createOrgUkm" class="form-label">Organisasi UKM</label>
-                                    <input type="text" class="form-control" id="createOrgUkm" name="org_ukm">
-                                </div>                                
+                                        <label for="createOrgHima" class="form-label">Organisasi HIMA</label>
+                                        <select class="form-control" id="createOrgHima" name="org_hima">
+                                            <option value="" disabled selected>Pilih HIMA Anda</option>
+                                            <option value="HIMA Teknik Informatika">HIMA Teknik Informatika</option>
+                                            <option value="HIMA Teknik Mesin">HIMA Teknik Mesin</option>
+                                            <option value="HIMA Teknik Sipil">HIMA Teknik Sipil</option>
+                                            <option value="HIMA Teknik Geologi">HIMA Teknik Geologi</option>
+                                            <!-- Tambahkan pilihan HIMA sesuai kebutuhan -->
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="createOrgUkm" class="form-label">Organisasi UKM</label>
+                                        <input type="text" class="form-control" id="createOrgUkm" name="org_ukm">
+                                    </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                         <button type="submit" class="btn btn-primary">Save changes</button>
@@ -61,6 +63,7 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="table-responsive">
                     <table class="table">
                         <thead class="text-primary">
@@ -81,66 +84,69 @@
                                 <td>{{ pemilih.prodi }}</td>
                                 <td>{{ pemilih.org_hima }}</td>
                                 <td>
-                                  {% with pemilih.org_ukm|safe as org_ukm_json %}
-                                      <script>
-                                          var orgUkm = JSON.parse('{{ org_ukm_json|escapejs }}');
-                                          for (var i = 0; i < orgUkm.length; i++) {
-                                              document.write(orgUkm[i].value);
-                                              if (i < orgUkm.length - 1) {
-                                                  document.write(', ');
-                                              }
-                                          }
-                                      </script>
-                                  {% endwith %}
-                              </td>
+                                    {% with pemilih.org_ukm|safe as org_ukm_json %}
+                                    <script>
+                                        var orgUkm = JSON.parse('{{ org_ukm_json|escapejs }}');
+                                        for (var i = 0; i < orgUkm.length; i++) {
+                                            document.write(orgUkm[i].value);
+                                            if (i < orgUkm.length - 1) {
+                                                document.write(', ');
+                                            }
+                                        }
+                                    </script>
+                                    {% endwith %}
+                                </td>
                                 <td>
-                                   <!-- Edit Modal -->
-                                      <button type="button" class="btn btn-warning js-edit" data-bs-toggle="modal" data-bs-target="#editModal{{ pemilih.id }}">Edit</button>
-                                      <div class="modal fade" id="editModal{{ pemilih.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ pemilih.id }}" aria-hidden="true">
-                                          <div class="modal-dialog">
-                                              <div class="modal-content">
-                                                  <div class="modal-header">
-                                                      <h5 class="modal-title" id="editModalLabel{{ pemilih.id }}">Edit Pemilih</h5>
-                                                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                  </div>
-                                                  <div class="modal-body">
-                                                      <form method="POST" action="{% url 'editPemilih' pemilih.id %}" enctype="multipart/form-data" id="editForm{{ pemilih.id }}">
-                                                          {% csrf_token %}
-                                                          <div class="mb-3">
-                                                              <label for="editNama{{ pemilih.id }}" class="form-label">Nama</label>
-                                                              <input type="text" class="form-control" id="editNama{{ pemilih.id }}" name="nama" value="{{ pemilih.nama }}">
-                                                          </div>
-                                                          <div class="mb-3">
-                                                              <label for="editNim{{ pemilih.id }}" class="form-label">NIM</label>
-                                                              <input type="text" class="form-control" id="editNim{{ pemilih.id }}" name="nim" value="{{ pemilih.nim }}">
-                                                          </div>
-                                                          <div class="mb-3">
-                                                              <label for="editProdi{{ pemilih.id }}" class="form-label">Prodi</label>
-                                                              <input type="text" class="form-control" id="editProdi{{ pemilih.id }}" name="prodi" value="{{ pemilih.prodi }}">
-                                                          </div>
-                                                          <div class="mb-3">
-                                                              <label for="editOrgHima{{ pemilih.id }}" class="form-label">Organisasi HIMA</label>
-                                                              <select class="form-control" id="editOrgHima{{ pemilih.id }}" name="org_hima">
-                                                                  <option value="HIMA A">HIMA A</option>
-                                                                  <option value="HIMA B">HIMA B</option>
-                                                                  <option value="HIMA C">HIMA C</option>
-                                                                  <!-- Tambahkan pilihan HIMA sesuai kebutuhan -->
-                                                              </select>
-                                                          </div>
-                                                          <div class="mb-3">
+                                    <!-- Edit Modal -->
+                                    <button type="button" class="btn btn-warning js-edit" data-bs-toggle="modal" data-bs-target="#editModal{{ pemilih.id }}">Edit</button>
+                                    <div class="modal fade" id="editModal{{ pemilih.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ pemilih.id }}" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="editModalLabel{{ pemilih.id }}">Edit Pemilih</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form method="POST" action="{% url 'editPemilih' pemilih.id %}" enctype="multipart/form-data" id="editForm{{ pemilih.id }}">
+                                                        {% csrf_token %}
+                                                        <div class="mb-3">
+                                                            <label for="editNama{{ pemilih.id }}" class="form-label">Nama</label>
+                                                            <input type="text" class="form-control" id="editNama{{ pemilih.id }}" name="nama" value="{{ pemilih.nama }}">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label for="editNim{{ pemilih.id }}" class="form-label">NIM</label>
+                                                            <input type="text" class="form-control" id="editNim{{ pemilih.id }}" name="nim" value="{{ pemilih.nim }}">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label for="editProdi{{ pemilih.id }}" class="form-label">Prodi</label>
+                                                            <input type="text" class="form-control" id="editProdi{{ pemilih.id }}" name="prodi" value="{{ pemilih.prodi }}">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label for="editOrgHima{{ pemilih.id }}" class="form-label">Organisasi HIMA</label>
+                                                            <select class="form-control" id="editOrgHima{{ pemilih.id }}" name="org_hima">
+                                                                <option value="{{pemilih.org_hima}}" >{{ pemilih.org_hima }}</option>
+                                                                <option value="HIMA Teknik Informatika">HIMA Teknik Informatika</option>
+                                                                <option value="HIMA Teknik Mesin">HIMA Teknik Mesin</option>
+                                                                <option value="HIMA Teknik Sipil">HIMA Teknik Sipil</option>
+                                                                <option value="HIMA Teknik Geologi">HIMA Teknik Geologi</option>
+                                                                <!-- Tambahkan pilihan HIMA sesuai kebutuhan -->
+                                                            </select>
+                                                        </div>
+                                                        <div class="mb-3">
                                                             <label for="editOrgUkm{{ pemilih.id }}" class="form-label">Organisasi UKM</label>
                                                             <input type="text" class="form-control org-ukm-input" id="editOrgUkm{{ pemilih.id }}" name="org_ukm" value="{{ pemilih.org_ukm }}">
-                                                          </div>                                                        
-                                                          <div class="modal-footer">
-                                                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                              <button type="submit" class="btn btn-primary">Save changes</button>
-                                                          </div>
-                                                      </form>
-                                                  </div>
-                                              </div>
-                                          </div>
-                                      </div>
-                                      <!-- End Edit Modal -->
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                            <button type="submit" class="btn btn-primary">Save changes</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- End Edit Modal -->
+
                                     <!-- Delete Modal -->
                                     <button type="button" class="btn btn-danger js-delete" data-bs-toggle="modal" data-bs-target="#deleteModal{{ pemilih.id }}">Delete</button>
                                     <div class="modal fade" id="deleteModal{{ pemilih.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ pemilih.id }}" aria-hidden="true">
@@ -173,6 +179,7 @@
 </div>
 
 {% endblock content %}
+
 {% block javascripts %}
 <script>
   $(document).ready(function() {
@@ -188,5 +195,4 @@
     new Tagify(input.get(0));
   });
 </script>
-
 {% endblock javascripts %}
